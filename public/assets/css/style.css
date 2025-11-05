@@ -1,0 +1,130 @@
+body {
+    background-color: #080c14;
+    color: #f3f6fb;
+}
+.navbar, .offcanvas {
+    background-color: #0c1220;
+}
+.navbar .nav-link, .navbar .navbar-brand {
+    color: #eaf2ff !important;
+}
+.navbar .nav-link:hover {
+    color: #ffffff !important;
+}
+.card {
+    background-color: #101828;
+    border: 1px solid #27324a;
+    color: #f3f6fb;
+}
+
+
+/* Tiêu đề thẻ, văn bản màu sáng */
+.card .card-title,
+.card .card-text,
+.card .small,
+.card small {
+    color: #f3f6fb !important;
+}
+
+
+.card-body {
+    color: #f3f6fb;
+}
+
+
+/* Profile card */
+.card.bg-secondary {
+    background-color: #162447 !important;
+    border-color: #27324a !important;
+}
+/* Inputs trên nền tối */
+.card.bg-secondary .form-control {
+    background-color: #0e1a33;
+    border-color: #27324a;
+    color: #f3f6fb;
+}
+.card.bg-secondary .form-control:focus {
+    background-color: #11224d;
+    color: #fff;
+    border-color: #495c83;
+    box-shadow: none;
+}
+.card.bg-secondary .form-label {
+    color: #eaf2ff;
+}
+.card.bg-secondary .btn-warning {
+    background-color: #ffc107;
+    color: #212529;
+    border: none;
+}
+.card.bg-secondary .btn-warning:hover {
+    background-color: #e0a800;
+}
+.seat {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none;
+    font-size: 0.8rem;
+    border: 1px solid #3b415a;
+    color: #fff;
+    margin: 2px;
+}
+.seat.A {
+    background-color: #0d6efd;
+}
+.seat.B {
+    background-color: #198754;
+}
+.seat.C {
+    background-color: #6f42c1;
+}
+.seat.selected {
+    box-shadow: 0 0 0 3px #20c997 inset, 0 0 0 1px #20c997;
+}
+.seat.booked {
+    background-color: #adb5bd;
+    color: #212529;
+    cursor: not-allowed;
+    text-decoration: line-through;
+}
+.seat.disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+}
+
+
+/* Các khung bảng bao quanh các từ dài và không tràn ra ngoài khung nhìn.*/
+.table td {
+    word-break: break-word;
+    white-space: normal;
+}
+
+
+
+
+.text-muted {
+    color: #8894a8 !important;
+}
+
+
+.text-secondary {
+    color: #a5b8d0 !important;
+}
+
+
+/* Đảm bảo thanh điều hướng trên cùng vẫn có thể nhấp được khi được xếp chồng lên nội dung trang khác. */
+.navbar {
+    position: relative;
+    z-index: 1020;
+}
+
+
+/* Ánh xạ màu cho các hạng mục ghế được chỉ định ngẫu nhiên. Các lớp này tương ứng với tên màu của Bootstrap. Sử dụng các thuộc tính tùy chỉnh của CSS cho phép màu sắc kế thừa các giá trị từ giao diện Bootstrap hiện đang được tải */
+.seat.c0d6efd { background-color: #0d6efd; }
+.seat.c198754 { background-color: #198754; }
+.seat.c6f42c1 { background-color: #6f42c1; }
