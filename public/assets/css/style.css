@@ -115,6 +115,9 @@ body {
 .text-secondary {
     color: #a5b8d0 !important;
 }
+.genre-note {
+    color: white !important;
+}
 
 
 /* Đảm bảo thanh điều hướng trên cùng vẫn có thể nhấp được khi được xếp chồng lên nội dung trang khác. */
