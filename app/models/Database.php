@@ -6,7 +6,7 @@ use PDOException;
 
 class Database
 {
-
+    private static $pdo = null;
     protected static function getConnection(): PDO
     {
         if (self::$pdo !== null) {
@@ -24,7 +24,6 @@ class Database
         }
         return self::$pdo;
     }
-
     public static function connect(): PDO
     {
         return self::getConnection();
