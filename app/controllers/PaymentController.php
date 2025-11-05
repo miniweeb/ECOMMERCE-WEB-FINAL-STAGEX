@@ -5,8 +5,9 @@ namespace App\Controllers;
 use App\Models\Booking;
 
 
-/*PaymentController hiển thị màn hình thanh toán cho booking hiện tại và xử lý việc hoàn tất hoặc hủy thanh toán. 
-Một bộ đếm ngược đơn giản được triển khai phía máy khách để tự động hủy sau 5 phút.
+/**
+* PaymentController hiển thị màn hình thanh toán cho booking hiện tại và xử lý việc hoàn tất hoặc hủy thanh toán. 
+* Một bộ đếm ngược đơn giản được triển khai phía máy khách để tự động hủy sau 5 phút.
 */
 
 
@@ -19,8 +20,8 @@ class PaymentController extends BaseController
             return;
         }
         // Hủy bất kỳ khoản thanh toán nào đang chờ xử lý trước thời gian cho phép (15 phút).
-        // Điều này đảm bảo các đặt chỗ và thanh toán được tự động hủy trước khi hiển thị trang thanh toán. 
-        // Phương thức này sẽ cập nhật cả trạng thái thanh toán và đặt chỗ khi cần thiết và giải phóng chỗ ngồi.
+// Điều này đảm bảo các đặt chỗ và thanh toán được tự động hủy trước khi hiển thị trang thanh toán. 
+// Phương thức này sẽ cập nhật cả trạng thái thanh toán và đặt chỗ khi cần thiết và giải phóng chỗ ngồi.
 
 
         $paymentExpiryModel = new \App\Models\Payment();
@@ -34,7 +35,7 @@ class PaymentController extends BaseController
             return;
         }
         // Xử lý hoàn tất thanh toán thủ công (dự phòng) nếu quản trị viên đánh dấu booking là đã thanh toán.
-        // Hệ thống cập nhật trạng thái đặt phòng và chuyển hướng đến trang chi tiết
+// Hệ thống cập nhật trạng thái đặt phòng và chuyển hướng đến trang chi tiết
 
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['complete'])) {
@@ -64,8 +65,7 @@ class PaymentController extends BaseController
     }
 
 
-    /* Khởi tạo thanh toán VNPay cho booking hiện tại. 
-    Phương thức này tạo một URL VNPay đã ký và chuyển hướng người dùng đến cổng thanh toán. */
+    /* Khởi tạo thanh toán VNPay cho booking hiện tại. Phương thức này tạo một URL VNPay đã ký và chuyển hướng người dùng đến cổng thanh toán. */
     public function vnpayPayment(): void
     {
         // Yêu cầu booking phiên hiện tại
@@ -166,8 +166,7 @@ class PaymentController extends BaseController
     }
 
 
-    /Xử lý URL trả về từ VNPay sau khi người dùng hoàn tất hoặc hủy thanh toán.*/
-
+    /*Xử lý URL trả về từ VNPay sau khi người dùng hoàn tất hoặc hủy thanh toán.*/
 
     public function vnpayReturn(): void
     {
