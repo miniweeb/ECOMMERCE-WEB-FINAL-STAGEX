@@ -1,8 +1,15 @@
 <?php
 namespace App\Models;
 
+<<<<<<< HEAD
 use PDO;
 
+=======
+
+use PDO;
+
+
+>>>>>>> cb2b1272143999ee52507153ec5d741714b4cb11
 /**
  * Seat model provides access to seats for a given theater.  The
  * `seats` table defines each seat with row character, number and
@@ -33,6 +40,10 @@ class Seat extends Database
         }
     }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> cb2b1272143999ee52507153ec5d741714b4cb11
     /**
      * Get an associative array of seat_id => booked status for a specific
      * performance.  Seats with status 'booked' in the `tickets` table are
@@ -62,6 +73,10 @@ class Seat extends Database
         return $ids;
     }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> cb2b1272143999ee52507153ec5d741714b4cb11
     /**
      * Update a range of seats in a theatre to a specific category.  Only
      * seats matching the given row and between the start and end numbers
