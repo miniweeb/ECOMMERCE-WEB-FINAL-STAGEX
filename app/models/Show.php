@@ -177,9 +177,4 @@ class Show extends Database
             return false;
         }
     }
-<<<<<<< HEAD
 }
-
-=======
-}
->>>>>>> cb2b1272143999ee52507153ec5d741714b4cb11
