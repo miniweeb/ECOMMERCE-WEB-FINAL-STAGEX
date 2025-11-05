@@ -36,21 +36,32 @@ document.addEventListener('DOMContentLoaded', () => {
             totalSpan.textContent = total.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
         }
     }
-    // Logic đếm ngược Payment
+    /**
+     * Đếm ngược thời gian thanh toán.  Đọc thuộc tính data-remaining trên
+     * phần tử #countdown nếu có, ngược lại mặc định 900 giây.
+     */
     const countdownEl = document.getElementById('countdown');
     if (countdownEl) {
         let remaining = 900;
-        const bookingId = countdownEl.getAttribute('data-booking-id');
-        const interval = setInterval(() => {
-            remaining--;
+        const dataRemaining = countdownEl.getAttribute('data-remaining');
+        if (dataRemaining && !isNaN(parseInt(dataRemaining, 10))) {
+            remaining = parseInt(dataRemaining, 10);
+        }
+        function updateDisplay() {
             const minutes = String(Math.floor(remaining / 60)).padStart(2, '0');
             const seconds = String(remaining % 60).padStart(2, '0');
             countdownEl.textContent = `${minutes}:${seconds}`;
-            if (remaining <= 0) {
-                clearInterval(interval);
-                // Chuyển hướng đến hủy bỏ
-                window.location.href = `index.php?pg=pay&cancel=1`;
-            }
-        }, 1000);
+        }
+        updateDisplay();
+        if (remaining > 0) {
+            const interval = setInterval(() => {
+                remaining--;
+                updateDisplay();
+                if (remaining <= 0) {
+                    clearInterval(interval);
+                    window.location.href = `index.php?pg=pay&cancel=1`;
+                }
+            }, 1000);
+        }
     }
 });
