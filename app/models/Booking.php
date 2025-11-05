@@ -2,21 +2,17 @@
 namespace App\Models;
 
 
-/**
-* Mô hình đặt chỗ bao gồm việc đặt chỗ và tạo vé. Một booking
-* thuộc về một người dùng và một suất diễn cụ thể, có một hoặc nhiều
-* vé liên quan. Trạng thái thanh toán và đặt chỗ được theo dõi.
+/*Mô hình đặt chỗ bao gồm việc đặt chỗ và tạo vé. Một booking
+thuộc về một người dùng và một suất diễn cụ thể, có một hoặc nhiều
+vé liên quan. Trạng thái thanh toán và đặt chỗ được theo dõi.
 */
 
 
 class Booking extends Database
 {
-/**
-* Tạo một booking mới với vé. Trả về ID đặt chỗ mới hoặc false nếu 
-* không thành công. Thao tác này được gói gọn trong một giao dịch
-* để đảm bảo tính nhất quán.
-*
-* @return int|false
+/*Tạo một booking mới với vé. Trả về ID đặt chỗ mới hoặc false nếu không thành công. 
+Thao tác này được gói gọn trong một giao dịch để đảm bảo tính nhất quán.
+@return int|false
 */
  public function create(int $userId, int $performanceId, array $seatIds, float $total)
 {
@@ -111,11 +107,10 @@ class Booking extends Database
 }
 
 
-    /**
-     * Lấy thông tin booking cùng ticket liên quan
-     * @param int $id
-     * @return array|null
-     */
+    /*Lấy thông tin booking cùng ticket liên quan
+    @param int $id
+    @return array|null
+    */
     public function find(int $id)
     {
         $pdo = $this->getConnection();
