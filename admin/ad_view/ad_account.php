@@ -1,8 +1,10 @@
 <h2 class="h4 mb-4">Quản lý tài khoản nhân viên</h2>
 
+
 <?php
 $formValues = $formValues ?? [];
 ?>
+
 
 <section class="mb-5">
     <h3 class="h5">Thêm tài khoản nhân viên</h3>
@@ -27,6 +29,7 @@ $formValues = $formValues ?? [];
     </form>
 </section>
 
+
 <section>
     <h3 class="h5">Danh sách nhân viên</h3>
     <?php if (!empty($staff)): ?>
@@ -38,7 +41,7 @@ $formValues = $formValues ?? [];
                         <th scope="col">Tên tài khoản</th>
                         <th scope="col">Email</th>
                         <th scope="col">Trạng thái</th>
-                        <th scope="col" class="text-center" style="width: 120px;">Hành động</th>
+                        <th scope="col" class="text-center" style="width: 200px;">Hành động</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -57,15 +60,12 @@ $formValues = $formValues ?? [];
                                     </select>
                                 </td>
                                 <td class="text-center">
+                                    <div class="d-flex justify-content-center gap-2">
                                     <button type="submit" class="btn btn-sm btn-primary">Cập nhật</button>
-                                </td>
                             </form>
-                        </tr>
-                        <tr>
                             <form method="post" onsubmit="return confirm('Bạn có chắc chắn muốn xóa tài khoản nhân viên này?');">
                                 <input type="hidden" name="action" value="staff_delete">
                                 <input type="hidden" name="user_id" value="<?= $s['user_id'] ?>">
-                                <td colspan="5" class="text-end">
                                     <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
                                 </td>
                             </form>
@@ -78,6 +78,7 @@ $formValues = $formValues ?? [];
         <p>Chưa có nhân viên nào.</p>
     <?php endif; ?>
 </section>
+
 
 <script>
 function togglePw(inputId, iconEl) {
@@ -94,3 +95,4 @@ function togglePw(inputId, iconEl) {
     }
 }
 </script>
+
