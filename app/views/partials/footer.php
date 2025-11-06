@@ -7,13 +7,14 @@
                     <p class="mb-1">CÔNG TY CỔ PHẦN DỊCH VỤ TRUYỀN THÔNG QUẢNG CÁO</p>
                     <p class="mb-1">SÀI GÒN PHẲNG – StageX</p>
                     <p class="mb-1">ĐỊA CHỈ: 125 CỐNG QUỲNH, P. NGUYỄN CƯ TRINH, Q.1, TPHCM</p>
-                    <!-- Updated contact details for StageX -->
                     <p class="mb-1">EMAIL: contact@stagex.vn</p>
                     <p class="mb-1">SĐT: (028) 2228 3825&nbsp;&nbsp;|&nbsp;&nbsp;0869 047 971</p>
                     <p class="mb-1">WEBSITE: stagex.vn</p>
                 </div>
-                <div class="col-12 col-md-6 d-flex align-items-end justify-content-md-end">
-                    <p class="mb-0 text-muted">&copy; <?= date('Y') ?> StageX. Designed by HoaiThu.</p>
+            </div>
+            <div class="row gy-3">
+                <div class="col-12 d-flex align-items-center justify-content-center">
+                    <p class="mb-0 text-muted">&copy; <?= date('Y') ?> StageX. Designed by XGroup.</p>
                 </div>
             </div>
         </div>
