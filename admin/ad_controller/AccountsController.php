@@ -24,6 +24,8 @@ class AccountsController extends AdBaseController
                         $errorMsg = 'Mật khẩu phải có ít nhất 8 ký tự.';
                     } elseif ($userModel->findByEmail($email)) {
                         $errorMsg = 'Email đã tồn tại.';
+                    } elseif ($userModel->findByAccountName($accName)) {
+                        $errorMsg = 'Tên tài khoản đã tồn tại.';
                     } else {
                         $userModel->create($email, $pwd, $accName, 'staff', true);
                         $_SESSION['success'] = 'Đã thêm tài khoản nhân viên.';
