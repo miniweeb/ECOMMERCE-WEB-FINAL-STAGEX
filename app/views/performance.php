@@ -6,11 +6,6 @@
     <ul class="list-inline">
         <?php foreach ($categories as $c): ?>
             <?php
-            // For dynamically generated colours (stored as hex without a leading '#'),
-            // fall back to inline styles so that the colour displays correctly.  When
-            // a colour class corresponds to a predefined Bootstrap context (e.g. 'primary',
-            // 'success', etc.), it will be ignored in favour of the inline style if
-            // present.  Hex colours are six hexadecimal digits without '#'.
             $catColor = $c['color_class'] ?? '';
             $style    = '';
             if (preg_match('/^[0-9a-fA-F]{6}$/', $catColor)) {
@@ -30,12 +25,10 @@
 
 <form method="post">
     <?php
-    // Xây dựng bản đồ giá và thông tin ghế.  Bao gồm tất cả các ghế để giữ khoảng trống
-    // đồng thời tạo bản đồ seatInfo (nhãn ghế và tên hạng ghế)
     $priceMap = [];
     $seatRowsMap = [];
     $maxSeatNum = 0;
-    // Bản đồ category_id => category_name
+
     $catNames = [];
     foreach ($categories as $cItem) {
         $catNames[$cItem['category_id']] = $cItem['category_name'];
@@ -59,13 +52,13 @@
             ];
         }
     }
-    // Sắp xếp hàng và số ghế tăng dần
+
     ksort($seatRowsMap);
     foreach ($seatRowsMap as &$seatList) {
         ksort($seatList);
     }
     unset($seatList);
-    // Xây dựng lưới ghế cho JS
+
     $seatGrid = [];
     foreach ($seatRowsMap as $rowChar => $seatsByNum) {
         $rowEntries = [];
@@ -113,7 +106,7 @@
             <button type="submit" class="btn btn-warning w-100">Xác nhận và thanh toán tại cổng VNPay</button>
         </div>
     </div>
-    <!-- Hidden input để truyền danh sách ghế đã chọn về máy chủ -->
+
     <input type="hidden" name="seats[]" id="selected-seats-input" value="[]">
     <script>
         document.addEventListener('DOMContentLoaded', function(){
@@ -153,7 +146,7 @@
             html += '</div>';
             html += '</div>';
             container.innerHTML = html;
-            // Logic chọn ghế và cập nhật hóa đơn
+
             const selectedInput = document.getElementById('selected-seats-input');
             const totalSpan = document.getElementById('selected-total');
             const selectedListEl = document.getElementById('selected-list');

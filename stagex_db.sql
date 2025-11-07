@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 07, 2025 at 11:13 AM
+-- Generation Time: Nov 07, 2025 at 11:20 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -2870,7 +2870,6 @@ INSERT INTO `users` (`user_id`, `email`, `password`, `account_name`, `user_type`
 (2, 'mytrangle1509@gmail.com', '$2y$10$0doy81SVgcSvSwMD/VBK2OGfKf6yIVFEnCmzZYR15PjSq/yGz8p.C', 'trangle', 'Khách hàng', 'hoạt động', 1, NULL, NULL),
 (3, 'hoaithunguyen066@gmail.com', '$2y$10$6pjx5wsk.tW3icop/RZjWu0nMUqs61OhljS8NttNHqOxG2yP/sZdK', 'hoaithu', 'Khách hàng', 'hoạt động', 1, NULL, NULL),
 (4, 'nguyenthithuytrang2020bd@gmail.com', '$2y$10$qEOSBdHhLThH6gneJ2tki.YIdoFCGM7wsBScXYAZ7sgZpDUIuLKSW', 'thuytrang', 'Khách hàng', 'hoạt động', 1, NULL, NULL),
-(5, 'trangle.31231026559@st.edu.vn', '$2y$10$tlDGrdanVbuN3Qpm3AQQeev4raQLczn/S0ltFjoVgCtCC6n0hXtTm', 'thuylinh', 'Khách hàng', 'hoạt động', 1, NULL, NULL),
 (6, 'trangltmt1509@gmail.com', '$2y$10$MTCttS.vzYX2xjZlEV7H9uEwBtOHw4LkrCtgxEmGLTQzABBKTt2sK', 'thuylinh', 'Nhân viên', 'khóa', 1, NULL, NULL);
 
 -- --------------------------------------------------------
@@ -2895,8 +2894,7 @@ INSERT INTO `user_detail` (`user_id`, `full_name`, `date_of_birth`, `address`, `
 (1, 'Dương Thanh Ngọc', '2005-08-12', NULL, NULL),
 (2, 'Lê Thị Mỹ Trang', '2005-09-15', NULL, NULL),
 (3, 'Nguyễn Hoài Thu', '2005-08-21', NULL, NULL),
-(4, 'Nguyễn Thị Thùy Trang', '2005-03-12', NULL, NULL),
-(5, 'Lê Linh', '2001-02-09', NULL, NULL);
+(4, 'Nguyễn Thị Thùy Trang', '2005-03-12', NULL, NULL);
 
 --
 -- Indexes for dumped tables

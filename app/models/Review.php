@@ -4,9 +4,19 @@ namespace App\Models;
 
 use PDO;
 
+<<<<<<< HEAD
 class Review extends Database
 {
     /**
+=======
+
+/**
+ */
+class Review extends Database
+{
+    /**
+     *
+>>>>>>> 5f9c2c1998f1c4e6923fdbc246d31acd730dfc05
      * @param int $showId
      * @return array
      */
@@ -26,15 +36,22 @@ class Review extends Database
 
 
     /**
+<<<<<<< HEAD
+=======
+     *
+>>>>>>> 5f9c2c1998f1c4e6923fdbc246d31acd730dfc05
      * @param int    $showId
      * @param int    $userId
-     * @param int    $rating  Rating between 1 and 5
+     * @param int    $rating 
      * @param string $content
      * @return bool
      */
     public function create(int $showId, int $userId, int $rating, string $content): bool
     {
+<<<<<<< HEAD
     
+=======
+>>>>>>> 5f9c2c1998f1c4e6923fdbc246d31acd730dfc05
         $pdo = $this->getConnection();
         try {
             $stmt = $pdo->prepare('CALL proc_create_review(:sid, :uid, :rating, :content)');
@@ -54,6 +71,10 @@ class Review extends Database
 
 
     /**
+<<<<<<< HEAD
+=======
+     *
+>>>>>>> 5f9c2c1998f1c4e6923fdbc246d31acd730dfc05
      * @return array
      */
     public function getAll(): array
@@ -71,7 +92,11 @@ class Review extends Database
 
 
     /**
+<<<<<<< HEAD
      * @param int $limit  Maximum number of reviews to return
+=======
+     * @param int $limit  
+>>>>>>> 5f9c2c1998f1c4e6923fdbc246d31acd730dfc05
      * @return array
      */
     public function getLatest(int $limit = 15): array
@@ -98,6 +123,10 @@ class Review extends Database
 
 
     /**
+<<<<<<< HEAD
+=======
+     *
+>>>>>>> 5f9c2c1998f1c4e6923fdbc246d31acd730dfc05
      * @param int $id
      * @return bool
      */
@@ -115,8 +144,12 @@ class Review extends Database
 
 
     /**
+<<<<<<< HEAD
+=======
+     *
+>>>>>>> 5f9c2c1998f1c4e6923fdbc246d31acd730dfc05
      * @param int $showId
-     * @return float|null Average rating or null if no reviews
+     * @return float|null 
      */
     public function getAverageRatingByShow(int $showId): ?float
     {
