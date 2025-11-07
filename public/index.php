@@ -47,8 +47,7 @@ switch ($pg) {
         (new PaymentController())->vnpayReturn();
         break;
     case 'login':
-        // Render the login page for GET requests and handle submission on POST requests.  The AuthController
-        // will determine whether to show the form or process the credentials.
+        
         (new AuthController())->login();
         break;
     case 'register':
@@ -71,15 +70,15 @@ switch ($pg) {
         (new BookingsController())->detail();
         break;
     case 'profile':
-        // Display and edit the logged in user's personal details
+        
         (new ProfileController())->index();
         break;
     case 'profile-reset-password':
-        // Allow logged in user to reset password directly from profile
+        
         (new ProfileController())->resetPassword();
         break;
     case 'about':
-        // Render a simple about page
+       
         include __DIR__ . '/../app/views/partials/header.php';
         include __DIR__ . '/../app/views/about.php';
         include __DIR__ . '/../app/views/partials/footer.php';

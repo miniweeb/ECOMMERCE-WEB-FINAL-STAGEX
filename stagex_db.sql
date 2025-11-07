@@ -1,30 +1,12 @@
--- phpMyAdmin SQL Dump
--- version 5.2.1
--- https://www.phpmyadmin.net/
---
--- Host: 127.0.0.1
--- Generation Time: Nov 07, 2025 at 11:20 AM
--- Server version: 10.4.32-MariaDB
--- PHP Version: 8.2.12
+
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
 
 
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
-
---
--- Database: `stagex_db`
---
-
 DELIMITER $$
---
--- Procedures
---
+
 CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_add_show_genre` (IN `in_show_id` INT, IN `in_genre_id` INT)   BEGIN
     INSERT INTO show_genres (show_id, genre_id)
     VALUES (in_show_id, in_genre_id);
@@ -64,7 +46,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_count_tickets_by_booking` (IN 
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_create_booking` (IN `p_user_id` INT, IN `p_performance_id` INT, IN `p_total` DECIMAL(10,2))   BEGIN
-    -- Insert a new booking with default status 'Đang xử lý'
+   
     INSERT INTO bookings (
         user_id,
         performance_id,
@@ -80,7 +62,6 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_create_booking` (IN `p_user_id
         NOW()
     );
 
-    -- Return the newly created booking ID
     SELECT LAST_INSERT_ID() AS booking_id;
 END$$
 
@@ -96,12 +77,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_create_payment` (IN `in_bookin
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_create_performance` (IN `in_show_id` INT, IN `in_theater_id` INT, IN `in_performance_date` DATE, IN `in_start_time` TIME, IN `in_end_time` TIME, IN `in_price` DECIMAL(10,3))   BEGIN
-    -- Create the performance and mark it as open for sale.  After
-    -- inserting the performance record, copy all seats from the
-    -- selected theatre into the seat_performance table so that each
-    -- performance maintains its own seat availability.  Seats without
-    -- a category (i.e. null category_id) are still copied; the
-    -- application will hide these seats from customers.
+   
     DECLARE new_pid INT;
     INSERT INTO performances (show_id, theater_id, performance_date, start_time, end_time, price, status)
     VALUES (in_show_id, in_theater_id, in_performance_date, in_start_time, in_end_time, in_price, 'Đang mở bán');
@@ -131,29 +107,20 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_create_show` (IN `in_title` VA
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_create_theater` (IN `in_name` VARCHAR(255), IN `in_rows` INT, IN `in_cols` INT)   BEGIN
-    -- Declare local variables at the start of the procedure.  MySQL/MariaDB
-    -- requires that DECLARE statements appear before any other SQL
-    -- statements within the BEGIN...END block.
+ 
     DECLARE new_tid INT;
     DECLARE r INT DEFAULT 1;
     DECLARE c INT;
 
-    -- Insert the new theatre and compute its identifier and total seats.  New
-    -- theatres are created with status 'Chờ xử lý' to prevent them from
-    -- being selected for performances until the admin approves them.
     INSERT INTO theaters (name, total_seats, status)
     VALUES (in_name, in_rows * in_cols, 'Chờ xử lý');
     SET new_tid = LAST_INSERT_ID();
 
-    -- Generate seats for each row and column.  Row characters start at 'A'
-    -- (ASCII 65) and increment for each row.  Seat numbers start at 1.
+   
     WHILE r <= in_rows DO
         SET c = 1;
         WHILE c <= in_cols DO
-            -- Generate each seat with both the physical seat_number and an
-            -- initial real_seat_number equal to the physical number.  The
-            -- real_seat_number will be recalculated when categories are
-            -- assigned or seats removed, ensuring contiguous labelling.
+            
             INSERT INTO seats (theater_id, row_char, seat_number, real_seat_number, category_id)
             VALUES (new_tid, CHAR(64 + r), c, c, NULL);
             SET c = c + 1;
@@ -161,26 +128,17 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_create_theater` (IN `in_name` 
         SET r = r + 1;
     END WHILE;
 
-    -- Return the new theatre ID for confirmation.
+   
     SELECT new_tid AS theater_id;
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_create_ticket` (IN `p_booking_id` INT, IN `p_seat_id` INT, IN `p_ticket_code` VARCHAR(20))   BEGIN
-    -- Declare local variables at the top of the procedure.  MySQL
-    -- requires that DECLARE statements appear before any other SQL
-    -- statements.  v_performance_id will hold the performance
-    -- associated with the booking.
+   
     DECLARE v_performance_id INT;
 
-    -- Insert a new ticket.  Tickets no longer determine seat availability;
-    -- seat_performance tracks the status of each seat for a performance.
     INSERT INTO tickets (booking_id, seat_id, ticket_code, status, created_at)
     VALUES (p_booking_id, p_seat_id, p_ticket_code, 'Đang chờ', NOW());
 
-    -- Determine the performance_id for this booking and update
-    -- seat_performance so that the seat is marked as booked.  A
-    -- performance_id of NULL indicates that the booking reference is
-    -- invalid, in which case no update is performed.
     SELECT performance_id INTO v_performance_id
     FROM bookings
     WHERE booking_id = p_booking_id;
@@ -234,7 +192,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_delete_theater` (IN `in_theate
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_expire_pending_payments` ()   BEGIN
-    -- First update payment status and associated booking status
+  
     UPDATE payments p
     JOIN bookings b ON p.booking_id = b.booking_id
     SET p.status = 'Thất bại',
@@ -243,7 +201,6 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_expire_pending_payments` ()   
     WHERE p.status = 'Đang chờ'
       AND TIMESTAMPDIFF(MINUTE, p.created_at, NOW()) >= 15;
 
-    -- Cancel any tickets linked to expired payments
     UPDATE tickets t
     JOIN payments p2 ON p2.booking_id = t.booking_id
     SET t.status = 'Đã hủy'
@@ -251,7 +208,6 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_expire_pending_payments` ()   
       AND TIMESTAMPDIFF(MINUTE, p2.created_at, NOW()) >= 15
       AND t.status IN ('Đang chờ', 'Hợp lệ');
 
-    -- Free up seat_performance seats for expired bookings
     UPDATE seat_performance sp
     JOIN tickets t2 ON sp.seat_id = t2.seat_id
     JOIN payments p3 ON p3.booking_id = t2.booking_id
@@ -270,7 +226,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_get_all_bookings` ()   BEGIN
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_get_all_genres` ()   BEGIN
-    -- Order genres by their primary key to display increasing IDs in admin views
+   
     SELECT * FROM genres ORDER BY genre_id ASC;
 END$$
 
@@ -283,10 +239,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_get_all_performances_detailed`
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_get_all_reviews` ()   BEGIN
-    -- Return all reviews joined with the reviewer account name and show title.  Include
-    -- the show_id explicitly so that application code can filter by show.  Without
-    -- selecting the show_id the caller would not be able to determine which
-    -- vở diễn each review belongs to.
+ 
     SELECT r.*, r.show_id AS show_id, u.account_name AS account_name, s.title
     FROM reviews r
     JOIN users u ON r.user_id = u.user_id
@@ -308,7 +261,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_get_all_shows` ()   BEGIN
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_get_all_theaters` ()   BEGIN
-    -- Order theatres by their primary key to ensure increasing ID ordering
+
     SELECT * FROM theaters ORDER BY theater_id ASC;
 END$$
 
@@ -319,11 +272,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_get_average_rating_by_show` (I
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_get_booked_seat_ids` (IN `in_performance_id` INT)   BEGIN
-    -- Return the IDs of seats that are booked for a given performance.
-    -- Under the new seating model, seat availability is tracked in the
-    -- seat_performance table.  A seat is considered booked when its
-    -- status in seat_performance is 'đã đặt'.  We no longer rely on
-    -- tickets and bookings to determine availability.
+
     SELECT sp.seat_id
     FROM seat_performance sp
     WHERE sp.performance_id = in_performance_id
@@ -337,10 +286,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_get_bookings_by_user` (IN `in_
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_get_booking_with_tickets` (IN `in_booking_id` INT)   BEGIN
-    -- Return booking details with tickets.  Use real_seat_number for
-    -- seat numbering so that seat labels remain contiguous after
-    -- category assignments.  Alias real_seat_number as seat_number to
-    -- maintain compatibility with existing application code.
+ 
     SELECT b.*, t.ticket_id, t.ticket_code, s.row_char, s.real_seat_number AS seat_number,
            sc.category_name, sc.color_class,
            (p.price + sc.base_price) AS ticket_price
@@ -379,7 +325,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_get_performances_by_show` (IN 
     SELECT p.*, t.name AS theater_name
     FROM performances p
     JOIN theaters t ON p.theater_id = t.theater_id
-    -- Only return performances that are currently open for sale (Đang mở bán)
+ 
     WHERE p.show_id = in_show_id AND p.status = 'Đang mở bán'
     ORDER BY p.performance_date, p.start_time;
 END$$
@@ -400,8 +346,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_get_performance_detailed_by_id
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_get_reviews_by_show` (IN `in_show_id` INT)   BEGIN
-    -- Join reviews with users using the account_name field.  Alias the account
-    -- name as account_name so application code can access it uniformly.
+  
     SELECT r.*, u.account_name AS account_name
     FROM reviews r
     JOIN users u ON r.user_id = u.user_id
@@ -410,11 +355,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_get_reviews_by_show` (IN `in_s
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_get_seats_for_theater` (IN `in_theater_id` INT)   BEGIN
-    -- Use a left join so that seats without a category assignment are
-    -- included in the results.  Ordering by row and seat_number
-    -- provides a deterministic grid.  Explicitly select columns to
-    -- expose the new real_seat_number field and hide the legacy status
-    -- column which no longer exists.
+  
     SELECT
         s.seat_id,
         s.theater_id,
@@ -454,11 +395,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_get_staff_users` ()   BEGIN
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_get_user_bookings_detailed` (IN `in_user_id` INT)   BEGIN
-    -- Use the real seat number when generating seat labels for the
-    -- bookings summary.  Seats are joined via tickets and then
-    -- concatenated as row_char + real_seat_number.  Ordering by
-    -- row_char and physical seat_number preserves a consistent
-    -- representation even when some seats are hidden from customers.
+  
     SELECT b.*, GROUP_CONCAT(CONCAT(s.row_char, s.real_seat_number) ORDER BY s.row_char, s.seat_number SEPARATOR ', ') AS seats
     FROM bookings b
     LEFT JOIN tickets t ON b.booking_id = t.booking_id
@@ -491,7 +428,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_modify_theater_size` (IN `in_t
     DECLARE r INT;
     DECLARE c INT;
     DECLARE addc INT;
-    -- Determine existing number of rows (by highest row_char) and columns
+ 
     SELECT MAX(row_char) INTO maxRowChar FROM seats WHERE theater_id = in_theater_id;
     IF maxRowChar IS NULL THEN
         SET oldRows = 0;
@@ -502,7 +439,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_modify_theater_size` (IN `in_t
     IF oldCols IS NULL THEN
         SET oldCols = 0;
     END IF;
-    -- Add rows at the end when in_add_rows is positive
+  
     IF in_add_rows > 0 THEN
         SET r = oldRows + 1;
         WHILE r <= oldRows + in_add_rows DO
@@ -515,13 +452,13 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_modify_theater_size` (IN `in_t
             SET r = r + 1;
         END WHILE;
     END IF;
-    -- Remove rows from the end when in_add_rows is negative
+ 
     IF in_add_rows < 0 THEN
         DELETE FROM seats
         WHERE theater_id = in_theater_id
           AND (ASCII(row_char) - 64) > oldRows + in_add_rows;
     END IF;
-    -- Add columns at the end when in_add_cols is positive
+  
     IF in_add_cols > 0 THEN
         SET addc = 1;
         WHILE addc <= in_add_cols DO
@@ -531,13 +468,13 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_modify_theater_size` (IN `in_t
             SET addc = addc + 1;
         END WHILE;
     END IF;
-    -- Remove columns from the end when in_add_cols is negative
+
     IF in_add_cols < 0 THEN
         DELETE FROM seats
         WHERE theater_id = in_theater_id
           AND seat_number > oldCols + in_add_cols;
     END IF;
-    -- Update the total seats count for the theatre
+
     CALL proc_update_theater_seat_counts();
 END$$
 
@@ -549,7 +486,6 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_set_user_otp` (IN `in_user_id`
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_update_booking_status` (IN `in_booking_id` INT, IN `in_booking_status` VARCHAR(20))   BEGIN
-    -- Update only the booking_status.  Payment status is now stored in the payments table.
     UPDATE bookings
     SET booking_status = in_booking_status
     WHERE booking_id = in_booking_id;
@@ -562,10 +498,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_update_genre` (IN `in_id` INT,
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_update_payment_status` (IN `in_txn_ref` VARCHAR(255), IN `in_status` VARCHAR(20), IN `in_bank_code` VARCHAR(255), IN `in_pay_date` VARCHAR(255))   BEGIN
-    -- Cập nhật trạng thái cho giao dịch thanh toán cụ thể.  Trạng thái
-    -- mới, mã ngân hàng và ngày thanh toán được lưu lại cùng thời điểm
-    -- cập nhật.  Dòng này chỉ thay đổi bản ghi của giao dịch có mã
-    -- tham chiếu (vnp_txn_ref) tương ứng.
+
     UPDATE payments
     SET status = in_status,
         vnp_bank_code = in_bank_code,
@@ -573,25 +506,19 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_update_payment_status` (IN `in
         updated_at = NOW()
     WHERE vnp_txn_ref = in_txn_ref;
 
-    -- Nếu trạng thái được cập nhật thành 'Thất bại' thì hủy booking và
-    -- giải phóng toàn bộ vé và ghế liên quan ngay lập tức.  Điều này
-    -- xử lý trường hợp người dùng hủy thanh toán thủ công hoặc cổng
-    -- thanh toán trả về kết quả thất bại, thay vì chờ thủ tục hết hạn.
     IF in_status = 'Thất bại' THEN
-        -- Đánh dấu booking liên quan là đã hủy
+      
         UPDATE bookings b
         JOIN payments p ON p.booking_id = b.booking_id
         SET b.booking_status = 'Đã hủy'
         WHERE p.vnp_txn_ref = in_txn_ref;
 
-        -- Đánh dấu tất cả các vé đang chờ hoặc hợp lệ của booking này là đã hủy
         UPDATE tickets t
         JOIN payments p2 ON p2.booking_id = t.booking_id
         SET t.status = 'Đã hủy'
         WHERE p2.vnp_txn_ref = in_txn_ref
           AND t.status IN ('Đang chờ','Hợp lệ');
 
-        -- Trả ghế về trạng thái trống cho suất diễn tương ứng
         UPDATE seat_performance sp
         JOIN tickets t2 ON sp.seat_id = t2.seat_id
         JOIN payments p3 ON p3.booking_id = t2.booking_id
@@ -627,21 +554,14 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_update_seat_category` (IN `in_
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_update_seat_category_range` (IN `in_theater_id` INT, IN `in_row_char` CHAR(1), IN `in_start_seat` INT, IN `in_end_seat` INT, IN `in_category_id` INT)   BEGIN
-    -- Assign or clear the category for the specified seat range.
+ 
     UPDATE seats
     SET category_id = IF(in_category_id = 0, NULL, in_category_id)
     WHERE theater_id = in_theater_id
       AND row_char = in_row_char
       AND seat_number BETWEEN in_start_seat AND in_end_seat;
 
-    -- Recalculate real_seat_number values for the entire row after
-    -- updating categories.  Seats with a NULL category_id should have
-    -- real_seat_number set to 0 so that they are hidden from
-    -- customer‑facing seat maps.  Seats with a category are
-    -- re‑numbered contiguously in ascending order by their physical
-    -- seat_number.
     SET @rn := 0;
-    -- First, assign sequential numbers to seats with non‑NULL category.
     UPDATE seats s
     JOIN (
         SELECT seat_id, (@rn := @rn + 1) AS new_num
@@ -653,7 +573,6 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_update_seat_category_range` (I
     ) AS ordered ON s.seat_id = ordered.seat_id
     SET s.real_seat_number = ordered.new_num;
 
-    -- Next, mark seats without a category as 0.
     UPDATE seats
     SET real_seat_number = 0
     WHERE theater_id = in_theater_id
@@ -672,10 +591,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_update_show_details` (IN `in_s
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_update_show_statuses` ()   BEGIN
-    -- Synchronise show status with the statuses of its performances.  For each show:
-    --  - set to "Sắp chiếu" when it has no performances
-    --  - set to "Đã kết thúc" when all performances have status "Đã kết thúc"
-    --  - otherwise set to "Đang chiếu"
+
     UPDATE shows s
     SET s.status = (
         CASE
@@ -701,7 +617,6 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_update_theater` (IN `in_theate
 END$$
 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `proc_update_theater_seat_counts` ()   BEGIN
-    -- Update each theater's total_seats as the count of all seats belonging to that theater
     UPDATE theaters t
     LEFT JOIN (
         SELECT theater_id, COUNT(seat_id) AS total_seats
@@ -765,11 +680,6 @@ END$$
 
 DELIMITER ;
 
--- --------------------------------------------------------
-
---
--- Table structure for table `bookings`
---
 
 CREATE TABLE `bookings` (
   `booking_id` int(11) NOT NULL,
@@ -780,9 +690,6 @@ CREATE TABLE `bookings` (
   `created_at` timestamp NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
---
--- Dumping data for table `bookings`
---
 
 INSERT INTO `bookings` (`booking_id`, `user_id`, `performance_id`, `total_amount`, `booking_status`, `created_at`) VALUES
 (29, 4, 16, 660000.000, 'Đã hoàn thành', '2025-08-26 21:06:55'),
@@ -886,11 +793,6 @@ INSERT INTO `bookings` (`booking_id`, `user_id`, `performance_id`, `total_amount
 (127, 2, 22, 470000.000, 'Đã hoàn thành', '2025-10-04 04:57:13'),
 (128, 2, 27, 490000.000, 'Đã hoàn thành', '2025-08-12 02:32:23');
 
--- --------------------------------------------------------
-
---
--- Table structure for table `genres`
---
 
 CREATE TABLE `genres` (
   `genre_id` int(11) NOT NULL,
@@ -898,9 +800,6 @@ CREATE TABLE `genres` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
---
--- Dumping data for table `genres`
---
 
 INSERT INTO `genres` (`genre_id`, `genre_name`, `created_at`) VALUES
 (6, 'Bi kịch', '2025-10-03 16:00:14'),
@@ -918,11 +817,6 @@ INSERT INTO `genres` (`genre_id`, `genre_name`, `created_at`) VALUES
 (18, 'Chính luận - Xã hội', '2025-11-04 12:34:20'),
 (19, 'Châm biếm - Trào phúng', '2025-11-04 12:34:51');
 
--- --------------------------------------------------------
-
---
--- Table structure for table `payments`
---
 
 CREATE TABLE `payments` (
   `payment_id` int(11) NOT NULL,
@@ -936,10 +830,6 @@ CREATE TABLE `payments` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
---
--- Dumping data for table `payments`
---
 
 INSERT INTO `payments` (`payment_id`, `booking_id`, `amount`, `status`, `payment_method`, `vnp_txn_ref`, `vnp_bank_code`, `vnp_pay_date`, `created_at`, `updated_at`) VALUES
 (24, 29, 660000.000, 'Thành công', 'VNPAY', 'TXN00024', 'NCB', '20250826210655', '2025-08-26 21:06:55', '2025-08-26 21:06:55'),
@@ -1043,11 +933,6 @@ INSERT INTO `payments` (`payment_id`, `booking_id`, `amount`, `status`, `payment
 (122, 127, 470000.000, 'Thành công', 'VNPAY', 'TXN00122', 'NCB', '20251004045713', '2025-10-04 04:57:13', '2025-10-04 04:57:13'),
 (123, 128, 490000.000, 'Thành công', 'VNPAY', 'TXN00123', 'NCB', '20250812023223', '2025-08-12 02:32:23', '2025-08-12 02:32:23');
 
--- --------------------------------------------------------
-
---
--- Table structure for table `performances`
---
 
 CREATE TABLE `performances` (
   `performance_id` int(11) NOT NULL,
@@ -1062,9 +947,6 @@ CREATE TABLE `performances` (
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
---
--- Dumping data for table `performances`
---
 
 INSERT INTO `performances` (`performance_id`, `show_id`, `theater_id`, `performance_date`, `start_time`, `end_time`, `status`, `price`, `created_at`, `updated_at`) VALUES
 (15, 8, 1, '2025-10-23', '19:30:00', NULL, 'Đã kết thúc', 180000, '2025-08-01 00:00:00', '2025-08-01 00:00:00'),
@@ -1101,11 +983,7 @@ INSERT INTO `performances` (`performance_id`, `show_id`, `theater_id`, `performa
 (51, 17, 3, '2025-11-28', '19:30:00', '21:25:00', 'Đang mở bán', 350000, '2025-11-04 13:43:57', '2025-11-04 13:43:57'),
 (52, 17, 2, '2025-11-29', '20:00:00', '21:55:00', 'Đang mở bán', 280000, '2025-11-04 13:44:19', '2025-11-04 13:44:19');
 
--- --------------------------------------------------------
 
---
--- Table structure for table `reviews`
---
 
 CREATE TABLE `reviews` (
   `review_id` int(11) NOT NULL,
@@ -1116,9 +994,6 @@ CREATE TABLE `reviews` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
---
--- Dumping data for table `reviews`
---
 
 INSERT INTO `reviews` (`review_id`, `show_id`, `user_id`, `rating`, `content`, `created_at`) VALUES
 (1, 9, 2, 5, 'Vở diễn rất hay, diễn viên diễn xuất sắc và câu chuyện lôi cuốn.', '2025-08-05 11:00:00'),
@@ -1132,11 +1007,6 @@ INSERT INTO `reviews` (`review_id`, `show_id`, `user_id`, `rating`, `content`, `
 (36, 12, 3, 5, 'Đạo diễn giữ được tinh thần nguyên tác mà vẫn mới mẻ.', '2025-11-04 13:37:36'),
 (38, 18, 4, 4, 'Không hợp gu mình lắm nhưng cũng đáng để xem', '2025-11-04 13:39:22');
 
--- --------------------------------------------------------
-
---
--- Table structure for table `seats`
---
 
 CREATE TABLE `seats` (
   `seat_id` int(11) NOT NULL,
@@ -1147,10 +1017,6 @@ CREATE TABLE `seats` (
   `real_seat_number` int(11) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
---
--- Dumping data for table `seats`
---
 
 INSERT INTO `seats` (`seat_id`, `theater_id`, `category_id`, `row_char`, `seat_number`, `real_seat_number`, `created_at`) VALUES
 (1, 1, 1, 'A', 1, 1, '2025-09-24 16:19:02'),
@@ -1260,11 +1126,6 @@ INSERT INTO `seats` (`seat_id`, `theater_id`, `category_id`, `row_char`, `seat_n
 (105, 3, 3, 'E', 5, 5, '2025-09-24 16:19:02'),
 (106, 3, 3, 'E', 6, 6, '2025-09-24 16:19:02');
 
--- --------------------------------------------------------
-
---
--- Table structure for table `seat_categories`
---
 
 CREATE TABLE `seat_categories` (
   `category_id` int(11) NOT NULL,
@@ -1273,30 +1134,17 @@ CREATE TABLE `seat_categories` (
   `color_class` varchar(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
---
--- Dumping data for table `seat_categories`
---
-
 INSERT INTO `seat_categories` (`category_id`, `category_name`, `base_price`, `color_class`) VALUES
 (1, 'A', 150000, 'c0d6efd'),
 (2, 'B', 75000, 'c198754'),
 (3, 'C', 0, 'c6f42c1');
 
--- --------------------------------------------------------
-
---
--- Table structure for table `seat_performance`
---
 
 CREATE TABLE `seat_performance` (
   `seat_id` int(11) NOT NULL,
   `performance_id` int(11) NOT NULL,
   `status` enum('trống','đã đặt') NOT NULL DEFAULT 'trống'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
---
--- Dumping data for table `seat_performance`
---
 
 INSERT INTO `seat_performance` (`seat_id`, `performance_id`, `status`) VALUES
 (1, 15, 'đã đặt'),
@@ -2510,11 +2358,6 @@ INSERT INTO `seat_performance` (`seat_id`, `performance_id`, `status`) VALUES
 (106, 47, 'trống'),
 (106, 51, 'trống');
 
--- --------------------------------------------------------
-
---
--- Table structure for table `shows`
---
 
 CREATE TABLE `shows` (
   `show_id` int(11) NOT NULL,
@@ -2528,9 +2371,6 @@ CREATE TABLE `shows` (
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
---
--- Dumping data for table `shows`
---
 
 INSERT INTO `shows` (`show_id`, `title`, `description`, `duration_minutes`, `director`, `poster_image_url`, `status`, `created_at`, `updated_at`) VALUES
 (8, 'Đứt dây tơ chùng', 'Câu chuyện xoay quanh những giằng xé trong tình yêu, danh vọng và số phận. Sợi dây tình cảm tưởng chừng bền chặt nhưng lại mong manh trước thử thách của lòng người.', 120, 'Nguyễn Văn Khánh', 'assets/images/dut-day-to-chung-poster.jpg', 'Đã kết thúc', '2025-08-01 00:00:00', '2025-08-01 00:00:00'),
@@ -2547,20 +2387,11 @@ INSERT INTO `shows` (`show_id`, `title`, `description`, `duration_minutes`, `dir
 (19, 'Xóm Vịt Trời', 'Một góc nhìn nhân văn và hài hước về cuộc sống mưu sinh của những người lao động nghèo trong một xóm nhỏ ven sông. Dù khốn khó, họ vẫn giữ niềm tin và tình người.', 105, 'Lê Thị Phương Loan', 'assets/images/xom-vit-troi-poster.jpg', 'Đang chiếu', '2025-11-04 12:46:05', '2025-11-04 13:11:48'),
 (20, 'Những con ma nhà hát', '“Những Con Ma Nhà Hát” là một câu chuyện rùng rợn nhưng cũng đầy tính châm biếm, xoay quanh những hiện tượng kỳ bí xảy ra tại một nhà hát cũ sắp bị phá bỏ. Khi đoàn kịch mới đến tập luyện, những bóng ma của các diễn viên quá cố bắt đầu xuất hiện, đưa người xem vào hành trình giằng co giữa nghệ thuật, danh vọng và quá khứ bị lãng quên.', 115, 'Nguyễn Khánh Trung', 'assets/images/nhung-con-ma-poster.jpg', 'Sắp chiếu', '2025-11-04 13:19:55', '2025-11-04 13:19:55');
 
--- --------------------------------------------------------
-
---
--- Table structure for table `show_genres`
---
 
 CREATE TABLE `show_genres` (
   `show_id` int(11) NOT NULL,
   `genre_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
---
--- Dumping data for table `show_genres`
---
 
 INSERT INTO `show_genres` (`show_id`, `genre_id`) VALUES
 (8, 6),
@@ -2599,12 +2430,6 @@ INSERT INTO `show_genres` (`show_id`, `genre_id`) VALUES
 (20, 12),
 (20, 13);
 
--- --------------------------------------------------------
-
---
--- Table structure for table `theaters`
---
-
 CREATE TABLE `theaters` (
   `theater_id` int(11) NOT NULL,
   `name` varchar(255) NOT NULL,
@@ -2613,20 +2438,11 @@ CREATE TABLE `theaters` (
   `status` enum('Chờ xử lý','Đã hoạt động') NOT NULL DEFAULT 'Chờ xử lý'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
---
--- Dumping data for table `theaters`
---
-
 INSERT INTO `theaters` (`theater_id`, `name`, `total_seats`, `created_at`, `status`) VALUES
 (1, 'Main Hall', 60, '2025-10-03 16:14:11', 'Đã hoạt động'),
 (2, 'Black Box', 24, '2025-10-03 16:14:22', 'Đã hoạt động'),
 (3, 'Studio', 30, '2025-10-03 16:14:32', 'Đã hoạt động');
 
--- --------------------------------------------------------
-
---
--- Table structure for table `tickets`
---
 
 CREATE TABLE `tickets` (
   `ticket_id` int(11) NOT NULL,
@@ -2637,9 +2453,6 @@ CREATE TABLE `tickets` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
---
--- Dumping data for table `tickets`
---
 
 INSERT INTO `tickets` (`ticket_id`, `booking_id`, `seat_id`, `ticket_code`, `status`, `created_at`) VALUES
 (45, 29, 61, 'TICK00045', 'Hợp lệ', '2025-08-26 21:06:55'),
@@ -2843,12 +2656,6 @@ INSERT INTO `tickets` (`ticket_id`, `booking_id`, `seat_id`, `ticket_code`, `sta
 (243, 128, 79, 'TICK00243', 'Hợp lệ', '2025-08-12 02:32:23'),
 (244, 128, 106, 'TICK00244', 'Hợp lệ', '2025-08-12 02:32:23');
 
--- --------------------------------------------------------
-
---
--- Table structure for table `users`
---
-
 CREATE TABLE `users` (
   `user_id` int(11) NOT NULL,
   `email` varchar(255) NOT NULL,
@@ -2861,22 +2668,14 @@ CREATE TABLE `users` (
   `otp_expires_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
---
--- Dumping data for table `users`
---
-
 INSERT INTO `users` (`user_id`, `email`, `password`, `account_name`, `user_type`, `status`, `is_verified`, `otp_code`, `otp_expires_at`) VALUES
 (1, 'staff@example.com', '$2y$10$/dfBZuihwFxTAjS6YFHUE.y/KIXoHhFjishdfbxVykWD87V4RCQKi', 'thanhngoc', 'Nhân viên', 'hoạt động', 1, NULL, NULL),
 (2, 'mytrangle1509@gmail.com', '$2y$10$0doy81SVgcSvSwMD/VBK2OGfKf6yIVFEnCmzZYR15PjSq/yGz8p.C', 'trangle', 'Khách hàng', 'hoạt động', 1, NULL, NULL),
 (3, 'hoaithunguyen066@gmail.com', '$2y$10$6pjx5wsk.tW3icop/RZjWu0nMUqs61OhljS8NttNHqOxG2yP/sZdK', 'hoaithu', 'Khách hàng', 'hoạt động', 1, NULL, NULL),
 (4, 'nguyenthithuytrang2020bd@gmail.com', '$2y$10$qEOSBdHhLThH6gneJ2tki.YIdoFCGM7wsBScXYAZ7sgZpDUIuLKSW', 'thuytrang', 'Khách hàng', 'hoạt động', 1, NULL, NULL),
+(5, 'trangle.31231026559@st.edu.vn', '$2y$10$tlDGrdanVbuN3Qpm3AQQeev4raQLczn/S0ltFjoVgCtCC6n0hXtTm', 'thuylinh', 'Khách hàng', 'hoạt động', 1, NULL, NULL),
 (6, 'trangltmt1509@gmail.com', '$2y$10$MTCttS.vzYX2xjZlEV7H9uEwBtOHw4LkrCtgxEmGLTQzABBKTt2sK', 'thuylinh', 'Nhân viên', 'khóa', 1, NULL, NULL);
 
--- --------------------------------------------------------
-
---
--- Table structure for table `user_detail`
---
 
 CREATE TABLE `user_detail` (
   `user_id` int(11) NOT NULL,
@@ -2886,262 +2685,143 @@ CREATE TABLE `user_detail` (
   `phone` varchar(20) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
---
--- Dumping data for table `user_detail`
---
 
 INSERT INTO `user_detail` (`user_id`, `full_name`, `date_of_birth`, `address`, `phone`) VALUES
 (1, 'Dương Thanh Ngọc', '2005-08-12', NULL, NULL),
 (2, 'Lê Thị Mỹ Trang', '2005-09-15', NULL, NULL),
 (3, 'Nguyễn Hoài Thu', '2005-08-21', NULL, NULL),
-(4, 'Nguyễn Thị Thùy Trang', '2005-03-12', NULL, NULL);
+(4, 'Nguyễn Thị Thùy Trang', '2005-03-12', NULL, NULL),
+(5, 'Lê Linh', '2001-02-09', NULL, NULL);
 
---
--- Indexes for dumped tables
---
-
---
--- Indexes for table `bookings`
---
 ALTER TABLE `bookings`
   ADD PRIMARY KEY (`booking_id`),
   ADD KEY `user_idx` (`user_id`),
   ADD KEY `performance_idx` (`performance_id`);
 
---
--- Indexes for table `genres`
---
 ALTER TABLE `genres`
   ADD PRIMARY KEY (`genre_id`);
 
---
--- Indexes for table `payments`
---
 ALTER TABLE `payments`
   ADD PRIMARY KEY (`payment_id`),
   ADD UNIQUE KEY `unique_txn_ref` (`vnp_txn_ref`),
   ADD KEY `payment_booking_idx` (`booking_id`);
 
---
--- Indexes for table `performances`
---
 ALTER TABLE `performances`
   ADD PRIMARY KEY (`performance_id`),
   ADD KEY `show_idx` (`show_id`),
   ADD KEY `theater_idx` (`theater_id`);
 
---
--- Indexes for table `reviews`
---
 ALTER TABLE `reviews`
   ADD PRIMARY KEY (`review_id`),
   ADD KEY `review_show_idx` (`show_id`),
   ADD KEY `review_user_idx` (`user_id`);
 
---
--- Indexes for table `seats`
---
 ALTER TABLE `seats`
   ADD PRIMARY KEY (`seat_id`),
   ADD KEY `theater_idx2` (`theater_id`),
   ADD KEY `category_idx2` (`category_id`);
 
---
--- Indexes for table `seat_categories`
---
 ALTER TABLE `seat_categories`
   ADD PRIMARY KEY (`category_id`);
 
---
--- Indexes for table `seat_performance`
---
 ALTER TABLE `seat_performance`
   ADD PRIMARY KEY (`seat_id`,`performance_id`),
   ADD KEY `sp_performance_idx` (`performance_id`),
   ADD KEY `idx_seat_id` (`seat_id`);
 
---
--- Indexes for table `shows`
---
 ALTER TABLE `shows`
   ADD PRIMARY KEY (`show_id`);
 
---
--- Indexes for table `show_genres`
---
 ALTER TABLE `show_genres`
   ADD PRIMARY KEY (`show_id`,`genre_id`),
   ADD KEY `show_genres_show_idx` (`show_id`),
   ADD KEY `show_genres_genre_idx` (`genre_id`);
 
---
--- Indexes for table `theaters`
---
 ALTER TABLE `theaters`
   ADD PRIMARY KEY (`theater_id`);
 
---
--- Indexes for table `tickets`
---
 ALTER TABLE `tickets`
   ADD PRIMARY KEY (`ticket_id`),
   ADD UNIQUE KEY `unique_ticket_code` (`ticket_code`),
   ADD KEY `ticket_booking_idx` (`booking_id`),
   ADD KEY `ticket_seat_idx` (`seat_id`);
 
---
--- Indexes for table `users`
---
 ALTER TABLE `users`
   ADD PRIMARY KEY (`user_id`),
   ADD UNIQUE KEY `unique_email` (`email`);
 
---
--- Indexes for table `user_detail`
---
 ALTER TABLE `user_detail`
   ADD PRIMARY KEY (`user_id`),
   ADD KEY `user_id_idx` (`user_id`);
 
---
--- AUTO_INCREMENT for dumped tables
---
-
---
--- AUTO_INCREMENT for table `bookings`
---
 ALTER TABLE `bookings`
   MODIFY `booking_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=129;
 
---
--- AUTO_INCREMENT for table `genres`
---
 ALTER TABLE `genres`
   MODIFY `genre_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
---
--- AUTO_INCREMENT for table `payments`
---
 ALTER TABLE `payments`
   MODIFY `payment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=124;
 
---
--- AUTO_INCREMENT for table `performances`
---
 ALTER TABLE `performances`
   MODIFY `performance_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=53;
 
---
--- AUTO_INCREMENT for table `reviews`
---
 ALTER TABLE `reviews`
   MODIFY `review_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
 
---
--- AUTO_INCREMENT for table `seats`
---
 ALTER TABLE `seats`
   MODIFY `seat_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=207;
 
---
--- AUTO_INCREMENT for table `seat_categories`
---
 ALTER TABLE `seat_categories`
   MODIFY `category_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
---
--- AUTO_INCREMENT for table `shows`
---
 ALTER TABLE `shows`
   MODIFY `show_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
---
--- AUTO_INCREMENT for table `theaters`
---
 ALTER TABLE `theaters`
   MODIFY `theater_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
---
--- AUTO_INCREMENT for table `tickets`
---
 ALTER TABLE `tickets`
   MODIFY `ticket_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=245;
 
---
--- AUTO_INCREMENT for table `users`
---
 ALTER TABLE `users`
   MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
---
--- Constraints for dumped tables
---
-
---
--- Constraints for table `bookings`
---
 ALTER TABLE `bookings`
   ADD CONSTRAINT `performance_idx` FOREIGN KEY (`performance_id`) REFERENCES `performances` (`performance_id`) ON UPDATE CASCADE,
   ADD CONSTRAINT `user_idx` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
---
--- Constraints for table `payments`
---
 ALTER TABLE `payments`
   ADD CONSTRAINT `payment_booking_idx` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`booking_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `payments_ibfk_booking` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`booking_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
---
--- Constraints for table `performances`
---
 ALTER TABLE `performances`
   ADD CONSTRAINT `show_idx` FOREIGN KEY (`show_id`) REFERENCES `shows` (`show_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `theater_idx` FOREIGN KEY (`theater_id`) REFERENCES `theaters` (`theater_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
---
--- Constraints for table `reviews`
---
 ALTER TABLE `reviews`
   ADD CONSTRAINT `review_show_idx` FOREIGN KEY (`show_id`) REFERENCES `shows` (`show_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `review_user_idx` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
---
--- Constraints for table `seats`
---
 ALTER TABLE `seats`
   ADD CONSTRAINT `category_idx2` FOREIGN KEY (`category_id`) REFERENCES `seat_categories` (`category_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `theater_idx2` FOREIGN KEY (`theater_id`) REFERENCES `theaters` (`theater_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
---
--- Constraints for table `seat_performance`
---
 ALTER TABLE `seat_performance`
   ADD CONSTRAINT `fk_sp_performance` FOREIGN KEY (`performance_id`) REFERENCES `performances` (`performance_id`),
   ADD CONSTRAINT `fk_sp_seat` FOREIGN KEY (`seat_id`) REFERENCES `seats` (`seat_id`),
   ADD CONSTRAINT `idx_seat_id` FOREIGN KEY (`seat_id`) REFERENCES `seats` (`seat_id`) ON UPDATE CASCADE,
   ADD CONSTRAINT `sp_performance_idx` FOREIGN KEY (`performance_id`) REFERENCES `performances` (`performance_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
---
--- Constraints for table `show_genres`
---
 ALTER TABLE `show_genres`
   ADD CONSTRAINT `show_genres_genre_idx` FOREIGN KEY (`genre_id`) REFERENCES `genres` (`genre_id`) ON UPDATE CASCADE,
   ADD CONSTRAINT `show_genres_show_idx` FOREIGN KEY (`show_id`) REFERENCES `shows` (`show_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
---
--- Constraints for table `tickets`
---
 ALTER TABLE `tickets`
   ADD CONSTRAINT `ticket_booking_idx` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`booking_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `ticket_seat_idx` FOREIGN KEY (`seat_id`) REFERENCES `seats` (`seat_id`) ON UPDATE CASCADE;
 
---
--- Constraints for table `user_detail`
---
 ALTER TABLE `user_detail`
   ADD CONSTRAINT `user_detail_ibfk_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

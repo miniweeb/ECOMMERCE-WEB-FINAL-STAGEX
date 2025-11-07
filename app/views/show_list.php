@@ -1,19 +1,10 @@
 <?php
-// Show listing page with filters and cards.
-// The variables available in this view:
-//  - $shows: array of shows after filtering
-//  - $genres: list of all genres (id, genre_name)
-//  - $selectedGenre: name of the currently selected genre (empty or 'all' means no selection)
-//  - $keyword: search keyword entered by the user
-//  - $startDate: start date filter (Y-m-d)
-//  - $endDate: end date filter (Y-m-d)
-//  - $priceMin: minimum price filter
-//  - $priceMax: maximum price filter
+
 ?>
 
 
 <div class="row g-4">
-    <!-- Filter sidebar -->
+
     <div class="col-12 col-md-3">
         <div class="card bg-dark border-secondary text-light">
             <div class="card-header border-secondary">
@@ -22,7 +13,7 @@
             <div class="card-body">
                 <form method="get" action="<?= BASE_URL ?>index.php">
                     <input type="hidden" name="pg" value="shows">
-                    <!-- Genre filter -->
+   
                     <div class="mb-3">
                         <label for="genre" class="form-label">Thể loại</label>
                         <select class="form-select" id="genre" name="genre">
@@ -33,7 +24,7 @@
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <!-- Date range filter -->
+      
                     <div class="mb-3">
                         <label class="form-label">Khoảng thời gian</label>
                         <div class="input-group">
@@ -42,7 +33,7 @@
                             <input type="date" class="form-control" name="end_date" value="<?= htmlspecialchars($endDate) ?>" placeholder="Đến">
                         </div>
                     </div>
-                    <!-- Price range filter -->
+             
                     <div class="mb-3">
                         <label class="form-label">Khoảng giá (VND)</label>
                         <div class="input-group">
@@ -56,7 +47,7 @@
             </div>
         </div>
     </div>
-    <!-- Show results -->
+
     <div class="col-12 col-md-9">
         <?php if (empty($shows)): ?>
             <p>Không tìm thấy vở diễn phù hợp.</p>
@@ -67,14 +58,14 @@
                         <div class="card h-100">
                             <img src="<?= htmlspecialchars($show['poster_image_url']) ?>" class="card-img-top" alt="<?= htmlspecialchars($show['title']) ?>" style="height:220px; object-fit:cover;">
                             <div class="card-body d-flex flex-column">
-                                <!-- Average rating displayed above the show title.  If no reviews exist, show a muted note. -->
+                               
                                 <div class="mb-1">
                                     <?php if (isset($show['avg_rating']) && $show['avg_rating'] !== null): ?>
                                         <?php
                                         $ratingVal = (float)$show['avg_rating'];
                                         $fullStars = floor($ratingVal);
                                         $halfStar  = ($ratingVal - $fullStars) >= 0.5;
-                                        // Render full stars
+                                        
                                         for ($i = 1; $i <= 5; $i++) {
                                             if ($i <= $fullStars) {
                                                 echo '<i class="bi bi-star-fill text-warning"></i>';
