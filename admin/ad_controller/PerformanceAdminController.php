@@ -1,13 +1,4 @@
 <?php
-/**
- * Controller for managing performances in the admin area.
- *
- * Administrators can create, delete and update performances.  New
- * performances require a show, theatre, date, start time and price.  End
- * time is optional; if omitted the duration of the selected show will
- * determine the end time.  Status updates allow administrators to
- * cancel or complete scheduled performances.
- */
 namespace App\Controllers;
 
 
@@ -15,9 +6,6 @@ namespace App\Controllers;
 
 class PerformanceAdminController extends AdBaseController
 {
-    /**
-     * Display and handle performance management actions.
-     */
     public function index(): void
     {
         if (!$this->ensureAdmin()) return;
@@ -31,14 +19,11 @@ class PerformanceAdminController extends AdBaseController
                 $theaterId = (int)($_POST['theater_id'] ?? 0);
                 $date      = trim($_POST['performance_date'] ?? '');
                 $start     = trim($_POST['start_time'] ?? '');
-                // End time is optional; if omitted the model will compute it
+                
                 $end       = trim($_POST['end_time'] ?? '');
                 $price     = (float)($_POST['price'] ?? 0);
                 if ($showId > 0 && $theaterId > 0 && $date && $start && $price > 0) {
-                    // Validate that the performance date is in the future (strictly greater than today).
-                    // Convert both the provided date and today's date to timestamps at midnight to
-                    // compare only the dates (ignoring time).  If the performance date is today
-                    // or earlier, reject the creation.
+                    
                     $perfDate = strtotime($date);
                     $todayDate = strtotime(date('Y-m-d'));
                     if ($perfDate !== false && $perfDate > $todayDate) {
@@ -82,7 +67,7 @@ class PerformanceAdminController extends AdBaseController
                 return;
             }
         }
-        // Determine if editing an existing performance
+        
         $editPerformance = null;
         if (isset($_GET['edit_id'])) {
             $editId = (int)$_GET['edit_id'];
@@ -92,11 +77,7 @@ class PerformanceAdminController extends AdBaseController
         }
         $performances = $perfModel->all();
         $shows        = $showModel->all();
-        // Only display theatres that have been approved.  Pending
-        // theatres (status "Chờ xử lý") are excluded from the drop‑down
-        // when creating a new performance.  This prevents admins from
-        // scheduling performances at incomplete venues.
-        $theatersRaw = $theaterModel->all();
+        
         $theaters    = [];
         foreach ($theatersRaw as $th) {
             if (($th['status'] ?? '') === 'Đã hoạt động') {
@@ -112,9 +93,7 @@ class PerformanceAdminController extends AdBaseController
         usort($theaters, function ($a, $b) {
             return ($a['theater_id'] ?? 0) <=> ($b['theater_id'] ?? 0);
         });
-        // Render the performance view outside of its folder.  The index file
-        // has been renamed to ad_performance.php, so omit the trailing
-        // "/index" when specifying the view path.
+        
         $this->renderAdmin('ad_performance', [
             'performances'    => $performances,
             'shows'           => $shows,
