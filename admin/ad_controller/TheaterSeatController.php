@@ -1,12 +1,4 @@
 <?php
-/**
- * Controller for managing theatres and seats in the admin area.
- *
- * Administrators can create new theatres with a specified number of rows
- * and columns, add seat categories, delete theatres or categories and
- * assign categories to ranges of seats.  The resulting seat map is
- * displayed for the selected theatre.
- */
 namespace App\Controllers;
 
 
@@ -14,9 +6,6 @@ namespace App\Controllers;
 
 class TheaterSeatController extends AdBaseController
 {
-    /**
-     * Display and handle actions for theatre and seat management.
-     */
     public function index(): void
     {
         if (!$this->ensureAdmin()) return;
@@ -71,18 +60,14 @@ class TheaterSeatController extends AdBaseController
             }
             if ($type === 'category_add') {
                 $name  = trim($_POST['category_name'] ?? '');
-                // Accept a numeric base price.  Treat empty or non‑positive as invalid.
+                
                 $price = isset($_POST['category_price']) ? (float)$_POST['category_price'] : 0;
                 if ($name && $price >= 0) {
-                    // Prevent duplicate seat categories with the same base price.  If such
-                    // a category already exists, set an error and do not create a new one.
+                    
                     if ($seatCatModel->findByPrice($price)) {
                         $_SESSION['error'] = 'Hạng giá ghế này đã tồn tại, Hãy tạo một hạng ghế với giá mới';
                     } else {
-                        // Generate a random six‑digit hexadecimal colour code for the new seat category.
-                        // We avoid using predefined Bootstrap classes here to ensure that each
-                        // newly created seat category has a unique colour.  The colour is stored
-                        // without a leading '#' to remain a valid CSS class name if needed.
+                        
                         try {
                             $randomInt = random_int(0, 0xFFFFFF);
                         } catch (\Exception $ex) {
@@ -102,12 +87,12 @@ class TheaterSeatController extends AdBaseController
                 return;
             }
             if ($type === 'category_update') {
-                // Update an existing seat category
+                
                 $cid   = (int)($_POST['category_id'] ?? 0);
                 $cname = trim($_POST['category_name'] ?? '');
                 $cprice= isset($_POST['category_price']) ? (float)$_POST['category_price'] : 0;
                 if ($cid > 0 && $cname !== '' && $cprice >= 0) {
-                    // Fetch current category to preserve colour
+                    
                     $catRow = $seatCatModel->find($cid);
                     if ($catRow) {
                         $color = $catRow['color_class'] ?? '';
@@ -130,7 +115,7 @@ class TheaterSeatController extends AdBaseController
 
 
             if ($type === 'theater_update') {
-                // Preserve backward compatibility: update only the theatre name.
+                
                 $tid  = (int)($_POST['theater_id'] ?? 0);
                 $tname= trim($_POST['theater_name'] ?? '');
                 if ($tid > 0 && $tname) {
@@ -150,7 +135,7 @@ class TheaterSeatController extends AdBaseController
 
 
             if ($type === 'theater_modify') {
-                // Update theatre name and adjust rows/columns in a single action
+                
                 $tid      = (int)($_POST['theater_id'] ?? 0);
                 $tname    = trim($_POST['theater_name'] ?? '');
                 $addRows  = (int)($_POST['add_rows'] ?? 0);
@@ -164,7 +149,7 @@ class TheaterSeatController extends AdBaseController
                 } else {
                     $_SESSION['error'] = 'Rạp không hợp lệ.';
                 }
-                // Redirect back to the same theatre page with both tid and edit_tid
+                
                 $this->redirect('index.php?pg=admin-theater-seat' . ($tid ? '&tid=' . $tid . '&edit_tid=' . $tid : ''));
                 return;
             }
@@ -173,7 +158,7 @@ class TheaterSeatController extends AdBaseController
 
 
             if ($type === 'theater_approve') {
-                // Approve a theatre after validating that no entire rows or columns are empty.
+                
                 $tid = (int)($_POST['theater_id'] ?? 0);
                 if ($tid > 0) {
                     $seatModel = new \App\Models\Seat();
@@ -182,11 +167,11 @@ class TheaterSeatController extends AdBaseController
                     $hasEmptyCol = false;
                     $rows = [];
                     $cols = [];
-                    // Organise seats by row and col to detect empties
+                    
                     foreach ($allSeats as $s) {
                         $row = $s['row_char'];
                         $col = (int)$s['seat_number'];
-                        // Track if this seat has a category
+                        
                         $seatHasCat = isset($s['category_id']) && $s['category_id'] !== null;
                         if (!isset($rows[$row])) {
                             $rows[$row] = ['hasCat' => false];
@@ -199,14 +184,14 @@ class TheaterSeatController extends AdBaseController
                             $cols[$col]['hasCat'] = true;
                         }
                     }
-                    // Check for any row without a seat category
+                   
                     foreach ($rows as $rInfo) {
                         if (!$rInfo['hasCat']) {
                             $hasEmptyRow = true;
                             break;
                         }
                     }
-                    // Check for any column without a seat category
+                   
                     if (!$hasEmptyRow) {
                         foreach ($cols as $cInfo) {
                             if (!$cInfo['hasCat']) {
@@ -225,7 +210,7 @@ class TheaterSeatController extends AdBaseController
                         }
                     }
                 }
-                // After approval, stay on the same theatre page to view the updated status and seat map
+                
                 $this->redirect('index.php?pg=admin-theater-seat' . ($tid ? '&tid=' . $tid . '&edit_tid=' . $tid : ''));
                 return;
             }
@@ -267,10 +252,7 @@ class TheaterSeatController extends AdBaseController
         }
         $theaters   = $theaterModel->all();
         $categories = $seatCatModel->all();
-        // Determine if theatres and seat categories can be deleted based on
-        // whether they are currently referenced by open performances.  The
-        // canDelete() methods return true when deletion is safe.  Annotate
-        // each theatre and category with a boolean flag to inform the view.
+        
         foreach ($theaters as &$th) {
             $tid = (int)($th['theater_id'] ?? ($th['id'] ?? 0));
             $th['can_delete'] = $theaterModel->canDelete($tid);
@@ -286,7 +268,7 @@ class TheaterSeatController extends AdBaseController
         usort($categories, function ($a, $b) {
             return ($a['category_id'] ?? 0) <=> ($b['category_id'] ?? 0);
         });
-        // Determine selected theatre for seat map
+        
         $selectedId  = isset($_GET['tid']) ? (int)$_GET['tid'] : 0;
         $seatsForMap = [];
         if ($selectedId > 0) {
@@ -295,9 +277,6 @@ class TheaterSeatController extends AdBaseController
         }
 
 
-
-
-        // Determine edit category and theatre from query parameters
         $editCategory = null;
         if (isset($_GET['edit_cid'])) {
             $cidParam = (int)$_GET['edit_cid'];
@@ -322,10 +301,7 @@ class TheaterSeatController extends AdBaseController
                 }
             }
         }
-        // Render the theatre & seat view outside of its folder.  The index
-        // file has been renamed to ad_theater&seat.php, so remove the
-        // "/index" suffix when specifying the view.  This passes along
-        // theatres, categories, the selected theatre ID and seat map.
+       
         $this->renderAdmin('ad_theater&seat', [
             'theaters'        => $theaters,
             'categories'      => $categories,
