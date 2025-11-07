@@ -1,29 +1,22 @@
 <?php
-/**
- * Controller for managing genres and shows in the admin area.
- *
- * Administrators can create and delete genres, add new shows and
- * assign genres to shows.  All operations are performed via
- * standard POST requests.  On completion the user is redirected
- * back to the listing page.
- */
+
 namespace App\Controllers;
 
 class CategoryShowController extends AdBaseController
 {
     /**
-     * Display and handle actions related to genres and shows.
+     * Hiển thị và xử lý các hd lquan đến thể loại và vở diễn.
      */
+
     public function index(): void
     {
         if (!$this->ensureAdmin()) return;
-        // Instantiate models for genres and shows
+        // Khởi tạo biến
         $genreModel = new \App\Models\Genre();
         $showModel  = new \App\Models\Show();
-        // Handle form submissions
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $type = $_POST['type'] ?? '';
-            // Add a new genre
+            // Thêm thể loại mới
             if ($type === 'genre_add') {
                 $name = trim($_POST['genre_name'] ?? '');
                 if ($name) {
@@ -36,9 +29,8 @@ class CategoryShowController extends AdBaseController
                     $_SESSION['error'] = 'Tên thể loại không được bỏ trống.';
                 }
                 $this->redirect('index.php?pg=admin-category-show');
-                return;
+                return; //Hướng về trang chính thể loại và vở diễn
             }
-            // Update an existing genre
             if ($type === 'genre_update') {
                 $id   = (int)($_POST['genre_id'] ?? 0);
                 $name = trim($_POST['genre_name'] ?? '');
@@ -54,7 +46,6 @@ class CategoryShowController extends AdBaseController
                 $this->redirect('index.php?pg=admin-category-show');
                 return;
             }
-            // Delete a genre
             if ($type === 'genre_delete') {
                 $id = (int)($_POST['genre_id'] ?? 0);
                 if ($id > 0) {
@@ -67,16 +58,14 @@ class CategoryShowController extends AdBaseController
                 $this->redirect('index.php?pg=admin-category-show');
                 return;
             }
-            // Add a new show
             if ($type === 'show_add') {
                 $title    = trim($_POST['title'] ?? '');
                 $desc     = trim($_POST['description'] ?? '');
                 $duration = (int)($_POST['duration'] ?? 0);
                 $director = trim($_POST['director'] ?? '');
                 $poster   = trim($_POST['poster_url'] ?? '');
-                // Always set new shows to the Vietnamese "Sắp chiếu" status.  The
-                // status cannot be chosen manually as it is determined by the
-                // existence and statuses of performances.  See proc_update_show_statuses().
+                // Luôn cài vở diễn mới ở trạng thái sắp chiếu
+                // Trạng thái k dc chọn thủ công vì nó được xác định bởi tồn tại&trạng thái of vở diễn ở proc_update_show_statuses().
                 $status   = 'Sắp chiếu';
                 $genreIds = $_POST['genre_ids'] ?? [];
                 if ($title && $duration > 0 && $director && $poster) {
@@ -97,7 +86,6 @@ class CategoryShowController extends AdBaseController
                 $this->redirect('index.php?pg=admin-category-show');
                 return;
             }
-            // Delete a show
             if ($type === 'show_delete') {
                 $id = (int)($_POST['show_id'] ?? 0);
                 if ($id > 0) {
@@ -111,7 +99,6 @@ class CategoryShowController extends AdBaseController
                 return;
             }
 
-            // Update an existing show
             if ($type === 'show_update') {
                 $showId    = (int)($_POST['show_id'] ?? 0);
                 $title     = trim($_POST['title'] ?? '');
@@ -119,9 +106,9 @@ class CategoryShowController extends AdBaseController
                 $duration  = (int)($_POST['duration'] ?? 0);
                 $director  = trim($_POST['director'] ?? '');
                 $poster    = trim($_POST['poster_url'] ?? '');
-                // Do not allow manual changes to show status.  The status is derived
-                // from performance data via proc_update_show_statuses() and the
-                // fallback update in Show::all().  Ignore any posted status value.
+                // Không cho phép thay đổi trạng thái vở diễn theo cách thủ công. 
+                //Trạng thái này được tính toán từ dữ liệu buổi diễn (performance data) thông qua thủ tục proc_update_show_statuses() và cập nhật dự phòng trong phương thức Show::all().
+                // Hãy bỏ qua mọi giá trị trạng thái được gửi lên (qua form POST).
                 $genreIds  = $_POST['genre_ids'] ?? [];
                 if ($showId > 0 && $title && $duration > 0 && $director && $poster) {
                     // Cập nhật thông tin show bằng thủ tục lưu trữ để tránh truy vấn thủ công
@@ -140,7 +127,7 @@ class CategoryShowController extends AdBaseController
                 return;
             }
         }
-        // Fetch data for display
+        // Lấy dữ liệu để hiển thị.
         $genres = $genreModel->all();
         $shows  = $showModel->all();
         usort($genres, function ($a, $b) {
@@ -149,20 +136,15 @@ class CategoryShowController extends AdBaseController
         usort($shows, function ($a, $b) {
             return ($a['show_id'] ?? 0) <=> ($b['show_id'] ?? 0);
         });
-        // For each show, determine whether it can be deleted.  A show can
-        // only be deleted when it has no associated performances.  This
-        // property is used by the view to enable or disable the delete
-        // button.  When the stored procedures are unavailable the
-        // fallback method Show::performances() will still return the
-        // scheduled performances for that show.
-        // Determine whether each show can be deleted.  A show can only be
-        // deleted if it has no performances at all (regardless of
-        // performance status).  Query the performances table directly
-        // because Show::performances() only returns open performances.
+        // // Đối với mỗi vở diễn, xác định xem nó có thể bị xóa hay không. 
+        //Một vở diễn chỉ có thể bị xóa khi nó không có các buổi diễn (performances) liên kết.
+        // Thuộc tính này được view (giao diện) sử dụng để bật hoặc tắt nút xóa. Khi các thủ tục lưu trữ không khả dụng, phương thức dự phòng Show::performances() vẫn sẽ trả về các buổi diễn đã được lên lịch cho vở diễn đó. 
+        //// Xác định liệu mỗi vở diễn có thể bị xóa hay không.
+        // Một vở diễn chỉ có thể bị xóa nếu nó hoàn toàn không có buổi diễn (bất kể trạng thái buổi diễn). Truy vấn trực tiếp bảng performances vì phương thức Show::performances() chỉ trả về các buổi diễn đang mở (open performances).
         $pdo = \App\Models\Database::connect();
         foreach ($shows as &$sh) {
             $sid = (int)($sh['show_id'] ?? 0);
-            // Use a stored procedure to count performances for a show
+        // Sử dụng một thủ tục lưu trữ để đếm số buổi diễn cho một vở diễn.
             $stmt = $pdo->prepare('CALL proc_count_performances_by_show(:sid)');
             $stmt->execute(['sid' => $sid]);
             $count = 0;
@@ -174,7 +156,7 @@ class CategoryShowController extends AdBaseController
         }
         unset($sh);
 
-        // Determine if editing an existing show
+       // Xác định xem có đang chỉnh sửa một vở diễn hiện có hay không.
         $editShow = null;
         $selectedGenres = [];
         if (isset($_GET['edit_id'])) {
@@ -195,12 +177,12 @@ class CategoryShowController extends AdBaseController
             }
         }
 
-        // Determine if editing an existing genre
+        // Xác định xem có đang chỉnh sửa một vở diễn hiện có hay không.
         $editGenre = null;
         if (isset($_GET['edit_genre_id'])) {
             $gid = (int)$_GET['edit_genre_id'];
             if ($gid > 0) {
-                // Find the genre by iterating through the loaded genres array
+                // Tìm thể loại bằng cách lặp qua mảng thể loại đã được tải.
                 foreach ($genres as $g) {
                     if ((int)($g['genre_id'] ?? 0) === $gid) {
                         $editGenre = $g;
@@ -209,8 +191,8 @@ class CategoryShowController extends AdBaseController
                 }
             }
         }
-        // Render the view outside of its former folder.  The index file has
-        // been moved and renamed to ad_category&show.php for clarity.
+        // Hiển thị view (giao diện) bên ngoài thư mục cũ của nó. 
+        // Tệp index đã được di chuyển và đổi tên thành ad_category&show.php để dễ hiểu hơn.
         $this->renderAdmin('ad_category&show', [
             'genres'        => $genres,
             'shows'         => $shows,
