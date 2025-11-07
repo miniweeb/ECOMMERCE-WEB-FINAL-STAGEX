@@ -97,7 +97,7 @@
             <table class="table table-dark table-striped table-bordered align-middle">
                 <thead>
                     <tr>
-                        <th scope="col">ID</th>
+                        <th scope="col" class="text-center" style="width: 50px;">ID</th>
                         <th scope="col">Tên thể loại</th>
                         <th scope="col" class="text-center" style="width: 200px;">Hành động</th>
                     </tr>
@@ -187,7 +187,7 @@
             <table class="table table-dark table-striped table-bordered align-middle">
                 <thead>
                     <tr>
-                        <th scope="col">ID</th>
+                        <th scope="col" class="text-center" style="width: 50px;">ID</th>
                         <th scope="col">Tiêu đề</th>
                         <th scope="col">Thể loại</th>
                         <th scope="col">Thời lượng</th>
