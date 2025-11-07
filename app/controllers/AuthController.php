@@ -213,8 +213,10 @@ class AuthController extends BaseController
                             return;
                         }
                     } else {
-                        $error = 'Mã OTP sai hoặc đã hết hạn.';
+                        $error = 'Không tìm thấy người dùng.';
                     }
+                } else {
+                    $error = 'Mã OTP không đúng hoặc đã hết hạn. Vui lòng kiểm tra lại.';
                 }
             }
         }
