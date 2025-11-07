@@ -1,6 +1,9 @@
 <?php
+
 namespace App\Controllers;
+
 use App\Models\User;
+
 class AuthController extends BaseController
 {
     public function login(): void
@@ -10,7 +13,7 @@ class AuthController extends BaseController
             return;
         }
         $error = '';
-        
+
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             //Người dùng đã nhấn nút đăng nhập
             $identifier = trim($_POST['identifier'] ?? '');
@@ -46,7 +49,7 @@ class AuthController extends BaseController
                     //Nếu không có lỗi, lưu thông tin người dùng vào phiên đăng nhập
                     $_SESSION['user']    = $user;
                     $_SESSION['success'] = 'Đăng nhập thành công!';
-                        if ($user['user_type'] === 'admin') {
+                    if ($user['user_type'] === 'admin') {
                         $this->redirect('../admin/index.php?pg=admin-index');
                     } else {
                         $this->redirect('index.php');
@@ -79,7 +82,7 @@ class AuthController extends BaseController
             $existingByName  = $userModel->findByAccountName($accountName);
             $emailTaken = $existingByEmail && ($existingByEmail['is_verified'] ?? 0) == 1;
             $nameTaken  = $existingByName && ($existingByName['is_verified'] ?? 0) == 1;
-            if ($nameTaken ||$emailTaken) {
+            if ($nameTaken || $emailTaken) {
                 $error = 'Tài khoản đã được sử dụng vui lòng nhập tên hoặc email khác';
             } elseif (!$email || !$password || !$accountName || !$fullName || !$dob) {
                 $error = 'Vui lòng nhập đầy đủ thông tin.';
@@ -101,9 +104,10 @@ class AuthController extends BaseController
                             'acc' => $accountName
                         ]);
                         $stmt->closeCursor(); //đóng con trỏ sau khi chạy proce, giải phóng tài nguyên
-                    } catch (\Throwable $e) {}
+                    } catch (\Throwable $e) {
+                    }
 
-                    $newUserId = $userId;//Gán lại id của người dùng để tiếp tục xử lý
+                    $newUserId = $userId; //Gán lại id của người dùng để tiếp tục xử lý
 
                 } elseif ($existingByName && ($existingByName['is_verified'] ?? 0) == 0) {
                     $userId = (int)$existingByName['user_id'];
@@ -117,10 +121,10 @@ class AuthController extends BaseController
                             'email' => $email
                         ]);
                         $stmt->closeCursor();
-                    } catch (\Throwable $e) {}
+                    } catch (\Throwable $e) {
+                    }
 
                     $newUserId = $userId;
-
                 } else {
                     $userModel->create($email, $password, $accountName, 'customer', false);
                     $new = $userModel->findByEmail($email);
@@ -133,8 +137,9 @@ class AuthController extends BaseController
                         $addr = $address !== '' ? $address : null;
                         $ph   = $phone   !== '' ? $phone   : null;
                         $detailModel->save($newUserId, $fullName, $dob, $addr, $ph);
-                    } catch (\Throwable $detailEx) {}
-                    
+                    } catch (\Throwable $detailEx) {
+                    }
+
                     $otp = str_pad((string)random_int(0, 999999), 6, '0', STR_PAD_LEFT);
                     $expires = date('Y-m-d H:i:s', time() + 10 * 60);
                     $userModel->setOtp($newUserId, $otp, $expires);
@@ -153,7 +158,7 @@ class AuthController extends BaseController
             'account_name' => $accountName,
             'email'        => $email,
             'full_name'    => $fullName,
-            'date_of_birth'=> $dob,
+            'date_of_birth' => $dob,
             'address'      => $address,
             'phone'        => $phone
         ]);
@@ -188,24 +193,28 @@ class AuthController extends BaseController
                 if ($userModel->verifyOtp($userId, $otpInput)) {
                     $user = $userModel->findById($userId);
                     if ($user) {
-                        unset($_SESSION['pending_user_id'], $_SESSION['pending_role']);
-                        $_SESSION['user'] = $user;
-                        $_SESSION['success'] = 'Xác minh thành công! Bạn đã đăng nhập.';
-                        $userType = $user['user_type'] ?? 'customer';
-                        if ($userType === 'staff') {
-                            $userType = 'admin';
-                            $user['user_type'] = 'admin';
-                            $_SESSION['user'] = $user;
-                        }
-                        if ($userType === 'admin') {
-                            $this->redirect('../admin/index.php?pg=admin-index');
+                        if ($user['status'] !== 'hoạt động') {
+                            $error = 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.';
                         } else {
-                            $this->redirect('index.php');
+                            unset($_SESSION['pending_user_id'], $_SESSION['pending_role']);
+                            $_SESSION['user'] = $user;
+                            $_SESSION['success'] = 'Xác minh thành công! Bạn đã đăng nhập.';
+                            $userType = $user['user_type'] ?? 'customer';
+                            if ($userType === 'staff') {
+                                $userType = 'admin';
+                                $user['user_type'] = 'admin';
+                                $_SESSION['user'] = $user;
+                            }
+                            if ($userType === 'admin') {
+                                $this->redirect('../admin/index.php?pg=admin-index');
+                            } else {
+                                $this->redirect('index.php');
+                            }
+                            return;
                         }
-                        return;
+                    } else {
+                        $error = 'Mã OTP sai hoặc đã hết hạn.';
                     }
-                } else {
-                    $error = 'Mã OTP sai hoặc đã hết hạn.';
                 }
             }
         }
@@ -257,85 +266,83 @@ class AuthController extends BaseController
         session_destroy();
         $this->redirect('index.php');
     }
-    
+
     public function forgot(): void
-{
-    $userModel = new User();
-    $error = '';
-    $info  = '';
+    {
+        $userModel = new User();
+        $error = '';
+        $info  = '';
 
-    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-        unset($_SESSION['reset_user_id'], $_SESSION['reset_verified'], $_SESSION['reset_user_email']);
-        $stage = 'request';
-    } else {
-        $stage = 'request';
-        if (!empty($_SESSION['reset_user_id']) && empty($_SESSION['reset_verified'])) {
-            $stage = 'otp';
-        } elseif (!empty($_SESSION['reset_user_id']) && !empty($_SESSION['reset_verified'])) {
-            $stage = 'reset';
-        }
-    }
-
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        if ($stage === 'request') {
-            $emailInput = trim($_POST['email'] ?? '');
-            if (!$emailInput) {
-                $error = 'Vui lòng nhập email.';
-            } elseif (!filter_var($emailInput, FILTER_VALIDATE_EMAIL)) {
-                $error = 'Vui lòng nhập email hợp lệ.';
-            } else {
-                $user = $userModel->findByEmail($emailInput);
-                if (!$user) {
-                    $error = 'Không tìm thấy tài khoản.';
-                } else {
-                    $otp = str_pad((string)random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-                    $expires = date('Y-m-d H:i:s', time() + 10 * 60);
-                    $userModel->setOtp((int)$user['user_id'], $otp, $expires);
-                    $this->sendOtpEmail($user['email'], $otp);
-
-                    $_SESSION['pending_user_id'] = $user['user_id'];
-                    $_SESSION['pending_role'] = 'forgot';
-                    $_SESSION['info'] = 'Mã xác thực đã được gửi. Vui lòng kiểm tra email.';
-
-                    $this->redirect('index.php?pg=verify');
-                    return;
-                }
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            unset($_SESSION['reset_user_id'], $_SESSION['reset_verified'], $_SESSION['reset_user_email']);
+            $stage = 'request';
+        } else {
+            $stage = 'request';
+            if (!empty($_SESSION['reset_user_id']) && empty($_SESSION['reset_verified'])) {
+                $stage = 'otp';
+            } elseif (!empty($_SESSION['reset_user_id']) && !empty($_SESSION['reset_verified'])) {
+                $stage = 'reset';
             }
         }
 
-        elseif ($stage === 'reset') {
-            $pwd  = trim($_POST['password'] ?? '');
-            $pwd2 = trim($_POST['confirm_password'] ?? '');
-
-            if (!$pwd || !$pwd2) {
-                $error = 'Vui lòng nhập mật khẩu mới và xác nhận.';
-            } elseif (strlen($pwd) < 8) {
-                $error = 'Mật khẩu phải có ít nhất 8 ký tự.';
-            } elseif ($pwd !== $pwd2) {
-                $error = 'Mật khẩu xác nhận không khớp.';
-            } else {
-                $uid = (int)$_SESSION['reset_user_id'];
-                if ($userModel->updatePassword($uid, $pwd)) {
-                    unset(
-                        $_SESSION['reset_user_id'],
-                        $_SESSION['reset_verified'],
-                        $_SESSION['reset_user_email'],
-                        $_SESSION['pending_user_id'],
-                        $_SESSION['pending_role']
-                    );
-                    $_SESSION['success'] = 'Đổi mật khẩu thành công! Vui lòng đăng nhập lại.';
-                    $this->redirect('index.php?pg=getpassword'); // Quay về form nhập email
-                    return;
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if ($stage === 'request') {
+                $emailInput = trim($_POST['email'] ?? '');
+                if (!$emailInput) {
+                    $error = 'Vui lòng nhập email.';
+                } elseif (!filter_var($emailInput, FILTER_VALIDATE_EMAIL)) {
+                    $error = 'Vui lòng nhập email hợp lệ.';
                 } else {
-                    $error = 'Không thể cập nhật mật khẩu. Vui lòng thử lại.';
+                    $user = $userModel->findByEmail($emailInput);
+                    if (!$user) {
+                        $error = 'Không tìm thấy tài khoản.';
+                    } else {
+                        $otp = str_pad((string)random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+                        $expires = date('Y-m-d H:i:s', time() + 10 * 60);
+                        $userModel->setOtp((int)$user['user_id'], $otp, $expires);
+                        $this->sendOtpEmail($user['email'], $otp);
+
+                        $_SESSION['pending_user_id'] = $user['user_id'];
+                        $_SESSION['pending_role'] = 'forgot';
+                        $_SESSION['info'] = 'Mã xác thực đã được gửi. Vui lòng kiểm tra email.';
+
+                        $this->redirect('index.php?pg=verify');
+                        return;
+                    }
+                }
+            } elseif ($stage === 'reset') {
+                $pwd  = trim($_POST['password'] ?? '');
+                $pwd2 = trim($_POST['confirm_password'] ?? '');
+
+                if (!$pwd || !$pwd2) {
+                    $error = 'Vui lòng nhập mật khẩu mới và xác nhận.';
+                } elseif (strlen($pwd) < 8) {
+                    $error = 'Mật khẩu phải có ít nhất 8 ký tự.';
+                } elseif ($pwd !== $pwd2) {
+                    $error = 'Mật khẩu xác nhận không khớp.';
+                } else {
+                    $uid = (int)$_SESSION['reset_user_id'];
+                    if ($userModel->updatePassword($uid, $pwd)) {
+                        unset(
+                            $_SESSION['reset_user_id'],
+                            $_SESSION['reset_verified'],
+                            $_SESSION['reset_user_email'],
+                            $_SESSION['pending_user_id'],
+                            $_SESSION['pending_role']
+                        );
+                        $_SESSION['success'] = 'Đổi mật khẩu thành công! Vui lòng đăng nhập lại.';
+                        $this->redirect('index.php?pg=getpassword'); // Quay về form nhập email
+                        return;
+                    } else {
+                        $error = 'Không thể cập nhật mật khẩu. Vui lòng thử lại.';
+                    }
                 }
             }
         }
+        $this->render('getpassword', [
+            'stage' => $stage,
+            'error' => $error,
+            'info'  => $info
+        ]);
     }
-    $this->render('getpassword', [
-        'stage' => $stage,
-        'error' => $error,
-        'info'  => $info
-    ]);
-}
 }
