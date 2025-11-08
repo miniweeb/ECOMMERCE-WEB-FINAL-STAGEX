@@ -275,8 +275,9 @@ class AuthController extends BaseController
 {
     $userModel = new User();
     $error = '';
-
-    // Xử lý gửi yêu cầu khôi phục mật khẩu
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    unset($_SESSION['reset_user_id'], $_SESSION['reset_verified'], $_SESSION['reset_user_email']);
+}
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $emailInput = trim($_POST['email'] ?? '');
 
@@ -302,19 +303,14 @@ class AuthController extends BaseController
                 // Lưu thông tin xác thực tạm
                 $_SESSION['pending_user_id'] = $user['user_id'];
                 $_SESSION['pending_role'] = 'forgot';
-                $_SESSION['info'] = 'Mã xác thực đã được gửi. Vui lòng kiểm tra email.';
 
-                // Chuyển tới trang xác minh OTP
                 $this->redirect('index.php?pg=verify');
                 return;
             }
         }
     }
-
-    // Hiển thị giao diện yêu cầu email
     $this->render('getpassword', [
-        'error' => $error,
-        'info'  => $_SESSION['info'] ?? ''
+        'error' => $error
     ]);
 }
 }

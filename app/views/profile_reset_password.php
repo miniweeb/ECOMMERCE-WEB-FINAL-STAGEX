@@ -35,17 +35,17 @@
 </div>
 
 <script>
-function togglePw(inputId, iconEl) {
-    var input = document.getElementById(inputId);
-    if (!input) return;
-    if (input.type === 'password') {
-        input.type = 'text';
-        iconEl.querySelector('i').classList.remove('bi-eye-slash');
-        iconEl.querySelector('i').classList.add('bi-eye');
-    } else {
-        input.type = 'password';
-        iconEl.querySelector('i').classList.remove('bi-eye');
-        iconEl.querySelector('i').classList.add('bi-eye-slash');
+    function togglePw(inputId, iconEl) {
+        var input = document.getElementById(inputId);
+        if (!input) return;
+        if (input.type === 'password') {
+            input.type = 'text';
+            iconEl.querySelector('i').classList.remove('bi-eye-slash');
+            iconEl.querySelector('i').classList.add('bi-eye');
+        } else {
+            input.type = 'password';
+            iconEl.querySelector('i').classList.remove('bi-eye');
+            iconEl.querySelector('i').classList.add('bi-eye-slash');
+        }
     }
-}
 </script>

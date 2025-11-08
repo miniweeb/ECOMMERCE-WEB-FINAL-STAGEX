@@ -11,11 +11,11 @@
             <div class="mb-3">
                 <label class="form-label d-block mb-1">Vai trò</label>
                 <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="role" id="roleCustomer" value="customer" <?= ($selectedRole === 'customer' ? 'checked' : '') ?> >
+                    <input class="form-check-input" type="radio" name="role" id="roleCustomer" value="customer" <?= ($selectedRole === 'customer' ? 'checked' : '') ?>>
                     <label class="form-check-label" for="roleCustomer">Khách hàng</label>
                 </div>
                 <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="role" id="roleAdmin" value="admin" <?= ($selectedRole === 'admin' ? 'checked' : '') ?> >
+                    <input class="form-check-input" type="radio" name="role" id="roleAdmin" value="admin" <?= ($selectedRole === 'admin' ? 'checked' : '') ?>>
                     <label class="form-check-label" for="roleAdmin">Quản trị</label>
                 </div>
             </div>
@@ -40,17 +40,17 @@
 </div>
 
 <script>
-function togglePw(inputId, iconEl) {
-    var input = document.getElementById(inputId);
-    if (!input) return;
-    if (input.type === 'password') {
-        input.type = 'text';
-        iconEl.querySelector('i').classList.remove('bi-eye-slash');
-        iconEl.querySelector('i').classList.add('bi-eye');
-    } else {
-        input.type = 'password';
-        iconEl.querySelector('i').classList.remove('bi-eye');
-        iconEl.querySelector('i').classList.add('bi-eye-slash');
+    function togglePw(inputId, iconEl) {
+        var input = document.getElementById(inputId);
+        if (!input) return;
+        if (input.type === 'password') {
+            input.type = 'text';
+            iconEl.querySelector('i').classList.remove('bi-eye-slash');
+            iconEl.querySelector('i').classList.add('bi-eye');
+        } else {
+            input.type = 'password';
+            iconEl.querySelector('i').classList.remove('bi-eye');
+            iconEl.querySelector('i').classList.add('bi-eye-slash');
+        }
     }
-}
 </script>

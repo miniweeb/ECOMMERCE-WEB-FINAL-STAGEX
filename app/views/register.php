@@ -5,33 +5,33 @@
             <div class="mb-3">
                 <label class="form-label">Tên tài khoản</label>
                 <input type="text" name="account_name" class="form-control" required
-                       value="<?= htmlspecialchars($account_name ?? ($_POST['account_name'] ?? '')) ?>">
+                    value="<?= htmlspecialchars($account_name ?? ($_POST['account_name'] ?? '')) ?>">
                 <small class="text-muted">Tên này sẽ được dùng để đăng nhập và hiển thị công khai. Bạn có thể cập nhật họ tên thật trong hồ sơ.</small>
             </div>
             <div class="mb-3">
                 <label class="form-label">Email</label>
                 <input type="email" name="email" class="form-control" required
-                       value="<?= htmlspecialchars($email ?? ($_POST['email'] ?? '')) ?>">
+                    value="<?= htmlspecialchars($email ?? ($_POST['email'] ?? '')) ?>">
             </div>
             <div class="mb-3">
                 <label class="form-label">Họ tên</label>
                 <input type="text" name="full_name" class="form-control" required
-                       value="<?= htmlspecialchars($full_name ?? ($_POST['full_name'] ?? '')) ?>">
+                    value="<?= htmlspecialchars($full_name ?? ($_POST['full_name'] ?? '')) ?>">
             </div>
             <div class="mb-3">
                 <label class="form-label">Ngày sinh</label>
                 <input type="date" name="date_of_birth" class="form-control" required
-                       value="<?= htmlspecialchars($date_of_birth ?? ($_POST['date_of_birth'] ?? '')) ?>">
+                    value="<?= htmlspecialchars($date_of_birth ?? ($_POST['date_of_birth'] ?? '')) ?>">
             </div>
             <div class="mb-3">
                 <label class="form-label">Địa chỉ <small class="text-muted">(tùy chọn)</small></label>
                 <input type="text" name="address" class="form-control"
-                       value="<?= htmlspecialchars($address ?? ($_POST['address'] ?? '')) ?>">
+                    value="<?= htmlspecialchars($address ?? ($_POST['address'] ?? '')) ?>">
             </div>
             <div class="mb-3">
                 <label class="form-label">Số điện thoại <small class="text-muted">(tùy chọn)</small></label>
                 <input type="text" name="phone" class="form-control"
-                       value="<?= htmlspecialchars($phone ?? ($_POST['phone'] ?? '')) ?>">
+                    value="<?= htmlspecialchars($phone ?? ($_POST['phone'] ?? '')) ?>">
             </div>
             <div class="mb-3">
                 <label class="form-label">Mật khẩu</label>
@@ -53,17 +53,17 @@
 </div>
 
 <script>
-function togglePw(inputId, iconEl) {
-    var input = document.getElementById(inputId);
-    if (!input) return;
-    if (input.type === 'password') {
-        input.type = 'text';
-        iconEl.querySelector('i').classList.remove('bi-eye-slash');
-        iconEl.querySelector('i').classList.add('bi-eye');
-    } else {
-        input.type = 'password';
-        iconEl.querySelector('i').classList.remove('bi-eye');
-        iconEl.querySelector('i').classList.add('bi-eye-slash');
+    function togglePw(inputId, iconEl) {
+        var input = document.getElementById(inputId);
+        if (!input) return;
+        if (input.type === 'password') {
+            input.type = 'text';
+            iconEl.querySelector('i').classList.remove('bi-eye-slash');
+            iconEl.querySelector('i').classList.add('bi-eye');
+        } else {
+            input.type = 'password';
+            iconEl.querySelector('i').classList.remove('bi-eye');
+            iconEl.querySelector('i').classList.add('bi-eye-slash');
+        }
     }
-}
 </script>

@@ -6,7 +6,7 @@
             </div>
         <?php endif; ?>
         <h2 class="h4 mb-3">Xác minh tài khoản</h2>
-        <p>Một mã xác thực đã được gửi tới địa chỉ email của bạn. Vui lòng nhập mã bên dưới để hoàn tất đăng ký/đăng nhập.</p>
+        <p>Một mã xác thực đã được gửi tới địa chỉ email của bạn. Vui lòng nhập mã bên dưới để tiếp tục</p>
         <?php if (isset($remaining) && $remaining > 0): ?>
             <p class="small text-warning">Mã OTP sẽ hết hạn trong: <span id="otp-timer"></span></p>
         <?php endif; ?>
@@ -23,27 +23,28 @@
             Mã OTP đã hết hạn. <a href="<?= BASE_URL ?>index.php" class="btn btn-sm btn-light ms-2">Quay về</a>
         </div>
         <script>
-        (function() {
-            var remaining = <?= isset($remaining) ? intval($remaining) : 0 ?>;
-            if (remaining > 0) {
-                var timerEl = document.getElementById('otp-timer');
-                var formWrapper = document.getElementById('otp-form-wrapper');
-                var expiredEl = document.getElementById('otp-expired-message');
-                function updateTimer() {
-                    if (remaining <= 0) {
-                        if (formWrapper) formWrapper.classList.add('d-none');
-                        if (expiredEl) expiredEl.classList.remove('d-none');
-                        return;
+            (function() {
+                var remaining = <?= isset($remaining) ? intval($remaining) : 0 ?>;
+                if (remaining > 0) {
+                    var timerEl = document.getElementById('otp-timer');
+                    var formWrapper = document.getElementById('otp-form-wrapper');
+                    var expiredEl = document.getElementById('otp-expired-message');
+
+                    function updateTimer() {
+                        if (remaining <= 0) {
+                            if (formWrapper) formWrapper.classList.add('d-none');
+                            if (expiredEl) expiredEl.classList.remove('d-none');
+                            return;
+                        }
+                        var mins = Math.floor(remaining / 60);
+                        var secs = remaining % 60;
+                        if (timerEl) timerEl.textContent = mins.toString().padStart(2, '0') + ':' + secs.toString().padStart(2, '0');
+                        remaining--;
+                        setTimeout(updateTimer, 1000);
                     }
-                    var mins = Math.floor(remaining / 60);
-                    var secs = remaining % 60;
-                    if (timerEl) timerEl.textContent = mins.toString().padStart(2, '0') + ':' + secs.toString().padStart(2, '0');
-                    remaining--;
-                    setTimeout(updateTimer, 1000);
+                    updateTimer();
                 }
-                updateTimer();
-            }
-        })();
+            })();
         </script>
     </div>
 </div>

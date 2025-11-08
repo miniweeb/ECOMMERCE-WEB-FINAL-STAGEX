@@ -1,7 +1,9 @@
 <?php
+
 namespace App\Controllers;
 
 use App\Models\UserDetail;
+
 class ProfileController extends BaseController
 {
     public function index(): void
@@ -20,7 +22,7 @@ class ProfileController extends BaseController
             $address  = trim($_POST['address'] ?? '');
             $phone    = trim($_POST['phone'] ?? '');
             $dob     = $dob     !== '' ? $dob     : null;
-            $fullName= $fullName!== '' ? $fullName: null;
+            $fullName = $fullName !== '' ? $fullName : null;
             $address = $address !== '' ? $address : null;
             $phone   = $phone   !== '' ? $phone   : null;
             if ($detailModel->save($userId, $fullName, $dob, $address, $phone)) {
