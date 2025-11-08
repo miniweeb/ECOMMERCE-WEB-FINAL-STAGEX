@@ -190,21 +190,38 @@ class AuthController extends BaseController
             if (!$otpInput) {
                 $error = 'Vui lòng nhập mã xác thực.';
             } else {
+                //Gọi hàm verifyOtp() để kiếm tra mã OTP, và trả về true/false, nếu trả về true thì gán lại user
                 if ($userModel->verifyOtp($userId, $otpInput)) {
                     $user = $userModel->findById($userId);
+
                     if ($user) {
                         if ($user['status'] !== 'hoạt động') {
                             $error = 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.';
                         } else {
+                            $role = $_SESSION['pending_role'] ?? '';
+                            // Nếu đây là quy trình "quên mật khẩu"
+                            if ($role === 'forgot') {
+                                $_SESSION['reset_user_id'] = $userId;
+                                $_SESSION['reset_verified'] = true;
+                                $_SESSION['reset_user_email'] = $user['email'];
+
+                                unset($_SESSION['pending_user_id'], $_SESSION['pending_role']);
+                                // Quay về trang nhập mật khẩu mới
+                                $this->redirect('index.php?pg=getpassword');
+                                return;
+                            }
+                            //Nếu là quy trình đăng ký
                             unset($_SESSION['pending_user_id'], $_SESSION['pending_role']);
                             $_SESSION['user'] = $user;
                             $_SESSION['success'] = 'Xác minh thành công! Bạn đã đăng nhập.';
+
                             $userType = $user['user_type'] ?? 'customer';
                             if ($userType === 'staff') {
                                 $userType = 'admin';
                                 $user['user_type'] = 'admin';
                                 $_SESSION['user'] = $user;
                             }
+
                             if ($userType === 'admin') {
                                 $this->redirect('../admin/index.php?pg=admin-index');
                             } else {
@@ -215,8 +232,6 @@ class AuthController extends BaseController
                     } else {
                         $error = 'Không tìm thấy người dùng.';
                     }
-                } else {
-                    $error = 'Mã OTP không đúng hoặc đã hết hạn. Vui lòng kiểm tra lại.';
                 }
             }
         }
@@ -274,7 +289,7 @@ class AuthController extends BaseController
         $userModel = new User();
         $error = '';
         $info  = '';
-
+        //Xác định giai đoạn của quá trình quên mật khẩu
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             unset($_SESSION['reset_user_id'], $_SESSION['reset_verified'], $_SESSION['reset_user_email']);
             $stage = 'request';
